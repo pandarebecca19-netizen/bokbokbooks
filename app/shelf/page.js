@@ -449,7 +449,7 @@ function ShelfView({ books, allEmpty, selectedYear, onSelect }) {
                 <span className="absolute top-0 left-[6%] right-[6%] h-[3px] bg-[rgba(250,245,235,0.55)]" />
                 <span className="w-[70%] h-[2px] bg-[rgba(59,42,31,0.3)] mb-2 mt-1.5 shrink-0" />
                 <span
-                  className="flex-1 overflow-hidden font-sans font-bold text-[0.62rem] sm:text-[0.8rem] tracking-wide max-h-full"
+                  className="flex-1 overflow-hidden font-serif font-bold text-[0.62rem] sm:text-[0.8rem] tracking-wide max-h-full"
                   style={{ writingMode: "vertical-lr", textOrientation: "mixed", whiteSpace: "normal", wordBreak: "keep-all", overflowWrap: "normal" }}
                 >
                   {b.title}
