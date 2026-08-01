@@ -7,7 +7,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        cream: "#FBF6F1",
+        cream: "#FFFFFF",
         card: "#FFFFFF",
         ink: "#3A2E2B",
         muted: "#8B7873",
