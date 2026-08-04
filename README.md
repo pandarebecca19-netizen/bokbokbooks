@@ -52,6 +52,7 @@ app/
 lib/
   supabaseClient.js     Supabase 클라이언트 설정
   constants.js          색깔 팔레트, 상태 라벨, 날짜/색상 계산 로직
+  forest.js              "지식의 숲" 레벨/나무 타입·크기·성장단계 계산 로직
   tiptapToggle.js        토글(접었다 펼치는 블록) 커스텀 에디터 확장
 supabase/
   schema.sql             DB 테이블 + 파일 업로드 권한 정책 (신규 설치용, 전체 포함)
@@ -59,6 +60,7 @@ supabase/
   migration_username_login.sql  아이디 로그인 + 닉네임 마이그레이션 (기존 프로젝트용)
   migration_price.sql        가격 필드 마이그레이션 (기존 프로젝트용)
   migration_current_page.sql 읽는 중인 책의 현재 페이지 마이그레이션 (기존 프로젝트용)
+  migration_forest.sql       "지식의 숲" 통계(profiles) + 자동 집계 트리거 (기존 프로젝트용)
 ```
 
 ## 이미 앱을 쓰고 계셨다면 (마이그레이션)
@@ -70,6 +72,7 @@ SQL Editor에서 **순서대로** 실행해주세요 (이미 실행한 적 있�
 2. `supabase/migration_username_login.sql`
 3. `supabase/migration_price.sql`
 4. `supabase/migration_current_page.sql`
+5. `supabase/migration_forest.sql`
 
 **주의**: 아이디 로그인 마이그레이션을 실행해도 이미 가입된 기존 계정에는
 아이디/닉네임이 없어요 (새 가입자부터 자동으로 생겨요). 기존 계정으로 계속
