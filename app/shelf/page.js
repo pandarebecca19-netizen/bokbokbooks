@@ -20,8 +20,14 @@ import {
   readingProgress,
   matchesSearch,
   sortBooks,
+  readingDistanceKm,
+  landmarkProgress,
+  formatKm,
+  CLIMB_LANDMARKS,
+  DIVE_LANDMARKS,
 } from "../../lib/constants";
 import NoteEditor from "./NoteEditor";
+import DistanceTrack from "./DistanceTrack";
 
 const SPINE_H = 190;
 const ROW_GAP = 30;
@@ -35,6 +41,7 @@ export default function ShelfPage() {
   const [tab, setTab] = useState("shelf"); // "shelf" | "list" | "years" | "genres" | "stats"
   const [selectedYear, setSelectedYear] = useState(null);
   const [search, setSearch] = useState("");
+  const [distanceMode, setDistanceMode] = useState("climb"); // "climb" | "dive"
   const [modalOpen, setModalOpen] = useState(false);
   const [editingBook, setEditingBook] = useState(null); // null = adding new
   const [detailBook, setDetailBook] = useState(null);
@@ -131,6 +138,10 @@ export default function ShelfPage() {
   const totalPages = doneBooks.reduce((sum, b) => sum + (Number(b.pages) || 0), 0);
   const totalPrice = doneBooks.reduce((sum, b) => sum + (Number(b.price) || 0), 0);
 
+  const distanceKm = readingDistanceKm(totalPages);
+  const distanceLandmarks = distanceMode === "dive" ? DIVE_LANDMARKS : CLIMB_LANDMARKS;
+  const { passed: heroLandmark, next: heroNextLandmark } = landmarkProgress(distanceKm, distanceLandmarks);
+
   const yearCounts = {};
   const yearPages = {};
   const yearPrice = {};
@@ -200,6 +211,16 @@ export default function ShelfPage() {
             </p>
             {totalPages > 0 && (
               <p className="text-[0.7rem] text-white/45 mt-1">{totalPages.toLocaleString("ko-KR")}쪽</p>
+            )}
+            {distanceKm > 0 && (
+              <p className="text-[0.7rem] text-white/45 mt-1">
+                {distanceMode === "dive" ? "🌊" : "🏔️"} {formatKm(distanceKm)}km
+                {heroLandmark
+                  ? ` · ${heroLandmark.label} 통과`
+                  : heroNextLandmark
+                  ? ` · ${heroNextLandmark.label}까지 ${formatKm(heroNextLandmark.km - distanceKm)}km`
+                  : ""}
+              </p>
             )}
           </div>
         </div>
@@ -350,6 +371,8 @@ export default function ShelfPage() {
             genreList={genreList}
             genreColors={genreColors}
             yearlyStats={yearlyStats}
+            distanceMode={distanceMode}
+            setDistanceMode={setDistanceMode}
           />
         )}
       </div>
@@ -761,12 +784,24 @@ function GenresView({ books, genreColors, onSelect }) {
 }
 
 // ---------------------------------------------------------------
-function StatsView({ totalRead, totalPages, genreList, genreColors, yearlyStats }) {
+function StatsView({
+  totalRead,
+  totalPages,
+  genreList,
+  genreColors,
+  yearlyStats,
+  distanceMode,
+  setDistanceMode,
+}) {
   const won = (n) => `${n.toLocaleString("ko-KR")}원`;
   const pg = (n) => `${n.toLocaleString("ko-KR")}쪽`;
 
   return (
     <div className="max-w-5xl mx-auto px-5 flex flex-col gap-8">
+      <div>
+        <DistanceTrack mode={distanceMode} setMode={setDistanceMode} totalPages={totalPages} />
+      </div>
+
       <div>
         <p className="font-serif text-lg text-ink mb-3">전체 통계</p>
         <div className="grid grid-cols-2 gap-3">
