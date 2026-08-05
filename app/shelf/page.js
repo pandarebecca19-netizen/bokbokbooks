@@ -165,9 +165,12 @@ export default function ShelfPage() {
 
   const searchFiltered = books.filter((b) => matchesSearch(b, search));
 
-  const shelfBooks = selectedYear
-    ? searchFiltered.filter((b) => b.status === "done" && getFinishYear(b) === selectedYear)
-    : searchFiltered;
+  const shelfBooks = sortBooks(
+    selectedYear
+      ? searchFiltered.filter((b) => b.status === "done" && getFinishYear(b) === selectedYear)
+      : searchFiltered,
+    "finish_desc"
+  );
 
   const openAdd = () => {
     setEditingBook(null);
@@ -194,11 +197,11 @@ export default function ShelfPage() {
 
           <div className="mt-4 bg-navy-deep rounded-xl px-5 py-4 relative">
             <p className="font-serif text-4xl text-peach-400 leading-none">
-              {books.length}
+              {totalRead}
               <span className="text-lg text-peach-300 ml-1">권</span>
             </p>
             <p className="text-xs text-white/60 mt-2">
-              {STATUS.done.label} {totalRead}권 · {STATUS.reading.label} {readingCount}권 · {STATUS.want.label} {wantCount}권
+              {STATUS.reading.label} {readingCount}권 · {STATUS.want.label} {wantCount}권
             </p>
             {totalPages > 0 && (
               <p className="text-[0.7rem] text-white/45 mt-1">{totalPages.toLocaleString("ko-KR")}쪽</p>
