@@ -400,33 +400,33 @@ function ShelfView({ books, allEmpty, selectedYear, onSelect }) {
   const isMobile = useIsMobile();
   return (
     <div className="max-w-5xl mx-auto px-2 sm:px-5">
-      <div className="rounded-2xl border-[5px] sm:border-[10px] border-oak-dark bg-oak-deep shadow-soft overflow-hidden">
+      <div className="rounded-2xl border-[5px] sm:border-[10px] border-[#E5E1DA] bg-white shadow-soft overflow-hidden">
         <div
           className="relative flex flex-wrap content-start items-end px-2 sm:px-6"
           style={{
             minHeight: PATTERN * 3,
             rowGap: ROW_GAP,
             columnGap: 5,
-            backgroundColor: "#B08F63",
+            backgroundColor: "#FFFFFF",
             backgroundImage: `repeating-linear-gradient(
               to bottom,
               transparent 0px, transparent ${SPINE_H}px,
-              rgba(0,0,0,0.18) ${SPINE_H}px, rgba(0,0,0,0.18) ${SPINE_H + 6}px,
-              #C7A576 ${SPINE_H + 6}px, #E4CA9C ${SPINE_H + 13}px,
-              #BC9A6C ${SPINE_H + 20}px,
+              rgba(0,0,0,0.08) ${SPINE_H}px, rgba(0,0,0,0.08) ${SPINE_H + 6}px,
+              #EDEBE7 ${SPINE_H + 6}px, #F7F6F4 ${SPINE_H + 13}px,
+              #E3E0DA ${SPINE_H + 20}px,
               transparent ${SPINE_H + 20}px, transparent ${PATTERN}px
             )`,
           }}
         >
           {allEmpty && (
-            <div className="w-full text-center py-16 text-oak-light font-serif">
+            <div className="w-full text-center py-16 text-muted font-serif">
               아직 책장이 비어있어요.
               <br />
               읽은 책을 기록해서 채워보세요.
             </div>
           )}
           {!allEmpty && books.length === 0 && (
-            <div className="w-full text-center py-16 text-oak-light font-serif">
+            <div className="w-full text-center py-16 text-muted font-serif">
               {selectedYear}년에 다 읽은 책이 아직 없어요.
             </div>
           )}
@@ -476,7 +476,7 @@ function ShelfView({ books, allEmpty, selectedYear, onSelect }) {
             );
           })}
         </div>
-        <div className="h-5 bg-gradient-to-b from-oak-dark to-oak-deep shadow-inner" />
+        <div className="h-5 bg-gradient-to-b from-[#EDEBE7] to-[#E0DDD6] shadow-inner" />
       </div>
     </div>
   );
