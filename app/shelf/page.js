@@ -436,6 +436,10 @@ function ShelfView({ books, allEmpty, selectedYear, onSelect }) {
           {books.map((b) => {
             const color = shelfSpineColorFor(b);
             const width = isMobile ? spineWidthForMobile(b) : spineWidthFor(b);
+            // Korean titles read left-to-right across columns; English (no
+            // Hangul) titles read right-to-left, like a Western book spine.
+            const hasKorean = /[가-힣ㄱ-ㅎㅏ-ㅣ]/.test(b.title || "");
+            const writingMode = hasKorean ? "vertical-lr" : "vertical-rl";
             return (
               <button
                 key={b.id}
@@ -455,7 +459,7 @@ function ShelfView({ books, allEmpty, selectedYear, onSelect }) {
                 <span className="w-[70%] h-[2px] bg-[rgba(59,42,31,0.3)] mb-2 mt-1.5 shrink-0" />
                 <span
                   className="flex-1 overflow-hidden font-serif font-bold text-[0.62rem] sm:text-[0.8rem] tracking-wide max-h-full"
-                  style={{ writingMode: "vertical-lr", textOrientation: "mixed", whiteSpace: "normal", wordBreak: "keep-all", overflowWrap: "normal" }}
+                  style={{ writingMode, textOrientation: "mixed", whiteSpace: "normal", wordBreak: "keep-all", overflowWrap: "normal" }}
                 >
                   {b.title}
                 </span>
