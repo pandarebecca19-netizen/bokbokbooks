@@ -44,7 +44,16 @@ function ToolbarButton({ onClick, active, label, children }) {
 export default function NoteEditor({ value, onChange }) {
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({ heading: { levels: [2, 3] } }),
+      StarterKit.configure({
+        heading: { levels: [2, 3] },
+        // links auto-detect on paste/typing, open in a new tab on click
+        link: {
+          openOnClick: true,
+          autolink: true,
+          linkOnPaste: true,
+          HTMLAttributes: { target: "_blank", rel: "noopener noreferrer nofollow" },
+        },
+      }),
       Placeholder.configure({ placeholder: "책에 대해 정리해보세요" }),
       Toggle,
       ToggleSummary,
@@ -75,6 +84,26 @@ export default function NoteEditor({ value, onChange }) {
 
   if (!editor) return null;
 
+  const setLink = () => {
+    const previous = editor.getAttributes("link").href;
+    const url = window.prompt("링크 주소를 입력하세요", previous || "https://");
+    if (url === null) return; // cancelled
+    if (url.trim() === "") {
+      editor.chain().focus().extendMarkRange("link").unsetLink().run();
+      return;
+    }
+    const href = url.trim();
+    if (editor.state.selection.empty) {
+      editor
+        .chain()
+        .focus()
+        .insertContent({ type: "text", text: href, marks: [{ type: "link", attrs: { href } }] })
+        .run();
+    } else {
+      editor.chain().focus().extendMarkRange("link").setLink({ href }).run();
+    }
+  };
+
   return (
     <div>
       <style>{`
@@ -88,6 +117,18 @@ export default function NoteEditor({ value, onChange }) {
         }
         .note-editor-content ul { list-style: disc; padding-left: 1.4em; margin: 0.4em 0; }
         .note-editor-content p { margin: 0.35em 0; }
+        /* show links as a compact "🔗 링크" chip instead of the full URL */
+        .note-editor-content a { font-size: 0; text-decoration: none; cursor: pointer; }
+        .note-editor-content a::before {
+          content: "🔗 링크";
+          font-size: 0.82rem;
+          background: #F9E3DF;
+          color: #B36560;
+          padding: 1px 9px;
+          border-radius: 9999px;
+          white-space: nowrap;
+        }
+        .note-editor-content a:hover::before { background: #F3C3AC; }
         .toggle-block { display: flex; align-items: flex-start; gap: 8px; margin: 0.85em 0; position: relative; }
         .toggle-arrow { background: transparent; border: none; color: #8B7873; cursor: pointer; font-size: 1.1rem; line-height: 1.9; padding: 0 3px; flex-shrink: 0; }
         .toggle-inner { flex: 1; min-width: 0; }
@@ -117,6 +158,9 @@ export default function NoteEditor({ value, onChange }) {
         </ToolbarButton>
         <ToolbarButton label="토글" onClick={() => editor.chain().focus().setToggle().run()}>
           ▸ 토글
+        </ToolbarButton>
+        <ToolbarButton label="링크" active={editor.isActive("link")} onClick={setLink}>
+          🔗 링크
         </ToolbarButton>
       </div>
 
