@@ -195,10 +195,12 @@ export default function ShelfPage() {
   if (selectedYear) {
     shelfBase = shelfBase.filter((b) => b.status === "done" && getFinishYear(b) === selectedYear);
   }
+  // 기본 책장은 항상 날짜순; 장르 책장에서만 정렬 선택이 적용됨
+  const effectiveOrder = selectedShelf ? shelfOrder : "date";
   const shelfBooks =
-    shelfOrder === "added"
+    effectiveOrder === "added"
       ? [...shelfBase].sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
-      : shelfOrder === "title"
+      : effectiveOrder === "title"
       ? [...shelfBase].sort((a, b) => (a.title || "").localeCompare(b.title || "", "ko"))
       : sortBooks(shelfBase, "finish_desc");
 
@@ -378,7 +380,7 @@ export default function ShelfPage() {
           </div>
         )}
 
-        {tab === "shelf" && (
+        {tab === "shelf" && selectedShelf && (
           <div className="flex items-center gap-2 mt-4">
             <span className="text-[0.7rem] text-muted">정렬</span>
             {[
