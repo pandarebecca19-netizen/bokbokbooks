@@ -51,25 +51,26 @@ export default function ShelfPage() {
   }, []);
 
   useEffect(() => {
-    supabase.auth.getUser().then(async ({ data }) => {
-      if (!data.user) {
+    supabase.auth.getSession().then(async ({ data }) => {
+      const sessionUser = data.session?.user;
+      if (!sessionUser) {
         router.replace("/login");
         return;
       }
-      setUser(data.user);
+      setUser(sessionUser);
 
       const { data: profile } = await supabase
         .from("profiles")
         .select("nickname")
-        .eq("id", data.user.id)
+        .eq("id", sessionUser.id)
         .maybeSingle();
 
       setDisplayName(
         profile?.nickname ||
-          data.user.user_metadata?.nickname ||
-          data.user.email.split("@")[0]
+          sessionUser.user_metadata?.nickname ||
+          sessionUser.email.split("@")[0]
       );
-      loadBooks(data.user.id);
+      loadBooks(sessionUser.id);
     });
   }, [router, loadBooks]);
 
