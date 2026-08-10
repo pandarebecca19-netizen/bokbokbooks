@@ -14,6 +14,7 @@ import {
   shelfSpineColorFor,
   spineWidthFor,
   spineWidthForMobile,
+  MOBILE_SPINE_H,
   formatDate,
   getFinishYear,
   deriveGenreColors,
@@ -23,6 +24,7 @@ import {
 } from "../../lib/constants";
 import NoteEditor from "./NoteEditor";
 import BadgeBoard from "./BadgeBoard";
+import CharacterCard from "./CharacterCard";
 import GenreBadges from "./GenreBadges";
 
 const SPINE_H = 190;
@@ -402,23 +404,25 @@ function useIsMobile() {
 
 function ShelfView({ books, allEmpty, selectedYear, onSelect }) {
   const isMobile = useIsMobile();
+  const spineH = isMobile ? MOBILE_SPINE_H : SPINE_H;
+  const pattern = spineH + ROW_GAP;
   return (
     <div className="max-w-5xl mx-auto px-2 sm:px-5">
       <div className="rounded-2xl border-[5px] sm:border-[10px] border-[#E5E1DA] bg-white shadow-soft overflow-hidden">
         <div
           className="relative flex flex-wrap content-start items-end px-2 sm:px-6"
           style={{
-            minHeight: PATTERN * 3,
+            minHeight: pattern * 3,
             rowGap: ROW_GAP,
             columnGap: 5,
             backgroundColor: "#FFFFFF",
             backgroundImage: `repeating-linear-gradient(
               to bottom,
-              transparent 0px, transparent ${SPINE_H}px,
-              rgba(0,0,0,0.08) ${SPINE_H}px, rgba(0,0,0,0.08) ${SPINE_H + 6}px,
-              #EDEBE7 ${SPINE_H + 6}px, #F7F6F4 ${SPINE_H + 13}px,
-              #E3E0DA ${SPINE_H + 20}px,
-              transparent ${SPINE_H + 20}px, transparent ${PATTERN}px
+              transparent 0px, transparent ${spineH}px,
+              rgba(0,0,0,0.08) ${spineH}px, rgba(0,0,0,0.08) ${spineH + 6}px,
+              #EDEBE7 ${spineH + 6}px, #F7F6F4 ${spineH + 13}px,
+              #E3E0DA ${spineH + 20}px,
+              transparent ${spineH + 20}px, transparent ${pattern}px
             )`,
           }}
         >
@@ -449,7 +453,7 @@ function ShelfView({ books, allEmpty, selectedYear, onSelect }) {
                 className="relative flex flex-col items-center rounded-t-sm px-1 py-2.5 transition hover:-translate-y-2 hover:brightness-110"
                 style={{
                   width,
-                  height: SPINE_H,
+                  height: spineH,
                   color: "#3B2A1F",
                   background: `linear-gradient(90deg, ${color.deep} 0%, ${color.base} 10%, ${color.base} 90%, ${color.deep} 100%)`,
                   boxShadow:
@@ -780,6 +784,10 @@ function StatsView({ totalRead, totalPages, genreList, genreColors, yearlyStats 
 
   return (
     <div className="max-w-5xl mx-auto px-5 flex flex-col gap-8">
+      <div>
+        <CharacterCard totalPages={totalPages} />
+      </div>
+
       <div>
         <BadgeBoard totalPages={totalPages} />
       </div>
