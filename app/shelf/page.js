@@ -440,6 +440,7 @@ export default function ShelfPage() {
 
         {tab === "stats" && (
           <StatsView
+            books={books}
             totalRead={totalRead}
             totalPages={totalPages}
             genreList={genreList}
@@ -872,14 +873,14 @@ function GenresView({ books, genreColors, onSelect }) {
 }
 
 // ---------------------------------------------------------------
-function StatsView({ totalRead, totalPages, genreList, genreColors, yearlyStats }) {
+function StatsView({ books, totalRead, totalPages, genreList, genreColors, yearlyStats }) {
   const won = (n) => `${n.toLocaleString("ko-KR")}원`;
   const pg = (n) => `${n.toLocaleString("ko-KR")}쪽`;
 
   return (
     <div className="max-w-5xl mx-auto px-5 flex flex-col gap-8">
       <div>
-        <CharacterCard totalPages={totalPages} />
+        <CharacterCard books={books} totalPages={totalPages} />
       </div>
 
       <div>
