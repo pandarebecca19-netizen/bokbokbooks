@@ -178,16 +178,19 @@ export default function ShelfPage() {
 
   const searchFiltered = books.filter((b) => matchesSearch(b, search));
 
-  const shelfNames = [...new Set(books.map((b) => (b.shelf || "").trim()).filter(Boolean))].sort(
-    (a, b) => a.localeCompare(b, "ko")
-  );
+  // 책장은 장르별로 나뉨 — 읽는 중 + 다 읽은 책의 장르들 (없으면 "미분류")
+  const shelfGenres = [
+    ...new Set(
+      books
+        .filter((b) => b.status === "reading" || b.status === "done")
+        .map((b) => (b.genre || "").trim() || "미분류")
+    ),
+  ].sort((a, b) => a.localeCompare(b, "ko"));
 
-  let shelfBase = searchFiltered;
+  // 책장 탭은 항상 읽는 중 + 다 읽은 책만 (읽고 싶어요 제외)
+  let shelfBase = searchFiltered.filter((b) => b.status === "reading" || b.status === "done");
   if (selectedShelf) {
-    shelfBase = shelfBase.filter((b) => (b.shelf || "").trim() === selectedShelf);
-  } else {
-    // 기본 책장: 읽는 중 + 다 읽은 책만 (읽고 싶어요 제외)
-    shelfBase = shelfBase.filter((b) => b.status === "reading" || b.status === "done");
+    shelfBase = shelfBase.filter((b) => ((b.genre || "").trim() || "미분류") === selectedShelf);
   }
   if (selectedYear) {
     shelfBase = shelfBase.filter((b) => b.status === "done" && getFinishYear(b) === selectedYear);
@@ -316,7 +319,7 @@ export default function ShelfPage() {
           </button>
         </div>
 
-        {tab === "shelf" && shelfNames.length > 0 && (
+        {tab === "shelf" && shelfGenres.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-4">
             <button
               onClick={() => setSelectedShelf(null)}
@@ -328,16 +331,19 @@ export default function ShelfPage() {
             >
               📚 기본 책장
             </button>
-            {shelfNames.map((name) => (
+            {shelfGenres.map((name) => (
               <button
                 key={name}
                 onClick={() => setSelectedShelf(selectedShelf === name ? null : name)}
-                className={`text-xs px-3 py-1.5 rounded-full border transition ${
+                className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition ${
                   selectedShelf === name
                     ? "bg-navy border-navy text-white"
                     : "bg-card border-rose-100 text-muted hover:border-peach-300"
                 }`}
               >
+                {genreColors[name] && (
+                  <span className="w-2.5 h-2.5 rounded-full" style={{ background: genreColors[name] }} />
+                )}
                 {name}
               </button>
             ))}
@@ -447,7 +453,6 @@ export default function ShelfPage() {
         <BookDetail
           book={editingBook}
           genreColors={genreColors}
-          shelfNames={shelfNames}
           onClose={() => {
             setModalOpen(false);
             setEditingBook(null);
@@ -460,7 +465,6 @@ export default function ShelfPage() {
         <BookDetail
           book={detailBook}
           genreColors={genreColors}
-          shelfNames={shelfNames}
           onClose={() => setDetailBook(null)}
           onSave={(fields, file) => saveBook(fields, file, detailBook.id)}
           onDelete={() => deleteBook(detailBook.id)}
@@ -702,12 +706,15 @@ function AllBooksView({ books, onSelect }) {
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortKey, setSortKey] = useState("finish_desc");
 
-  const allCount = books.length;
-  const doneCount = books.filter((b) => b.status === "done").length;
-  const readingCount = books.filter((b) => b.status === "reading").length;
+  // 전체보기에는 읽은 책 / 읽고 있는 책만 (읽고 싶어요 제외)
+  const visibleBooks = books.filter((b) => b.status !== "want");
+
+  const allCount = visibleBooks.length;
+  const doneCount = visibleBooks.filter((b) => b.status === "done").length;
+  const readingCount = visibleBooks.filter((b) => b.status === "reading").length;
 
   const filtered =
-    statusFilter === "all" ? books : books.filter((b) => b.status === statusFilter);
+    statusFilter === "all" ? visibleBooks : visibleBooks.filter((b) => b.status === statusFilter);
   const sorted = sortBooks(filtered, sortKey);
 
   return (
@@ -941,14 +948,13 @@ function StatsView({ totalRead, totalPages, genreList, genreColors, yearlyStats 
 }
 
 // ---------------------------------------------------------------
-function BookDetail({ book, genreColors, shelfNames = [], onClose, onSave, onDelete }) {
+function BookDetail({ book, genreColors, onClose, onSave, onDelete }) {
   const isEdit = Boolean(book);
   const [title, setTitle] = useState(book?.title || "");
   const [author, setAuthor] = useState(book?.author || "");
   const [pages, setPages] = useState(book?.pages || "");
   const [currentPage, setCurrentPage] = useState(book?.current_page || "");
   const [price, setPrice] = useState(book?.price || "");
-  const [shelf, setShelf] = useState(book?.shelf || "");
   const [status, setStatus] = useState(book?.status || "reading");
   const [colorKey, setColorKey] = useState(book?.color_key || COLOR_SWATCHES[0].key);
   const [genre, setGenre] = useState(book?.genre || "");
@@ -999,7 +1005,6 @@ function BookDetail({ book, genreColors, shelfNames = [], onClose, onSave, onDel
         current_page: status === "reading" && currentPage ? Number(currentPage) : null,
         rating,
         note,
-        shelf: shelf.trim() || null,
         cover_url: book?.cover_url || null,
       },
       file
@@ -1186,24 +1191,6 @@ function BookDetail({ book, genreColors, shelfNames = [], onClose, onSave, onDel
                   ))}
               </div>
 
-              <div>
-                <p className="text-[0.68rem] text-muted mb-1">책장 (선택)</p>
-                <input
-                  list="shelf-name-options"
-                  className="rounded-lg border border-rose-100 px-2.5 py-1.5 text-sm text-ink w-full max-w-[200px]"
-                  value={shelf}
-                  onChange={(e) => setShelf(e.target.value)}
-                  placeholder="예: 세계문학전집"
-                />
-                <datalist id="shelf-name-options">
-                  {shelfNames.map((name) => (
-                    <option key={name} value={name} />
-                  ))}
-                </datalist>
-                <p className="text-[0.68rem] text-muted mt-1.5">
-                  비워두면 기본 책장에만 담겨요.
-                </p>
-              </div>
             </div>
           </div>
         </div>
