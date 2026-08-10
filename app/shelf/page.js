@@ -39,6 +39,7 @@ export default function ShelfPage() {
   const [tab, setTab] = useState("shelf"); // "shelf" | "list" | "years" | "genres" | "stats"
   const [selectedYear, setSelectedYear] = useState(null);
   const [search, setSearch] = useState("");
+  const [shelfOrder, setShelfOrder] = useState("date"); // "date" | "added" | "title"
   const [modalOpen, setModalOpen] = useState(false);
   const [editingBook, setEditingBook] = useState(null); // null = adding new
   const [detailBook, setDetailBook] = useState(null);
@@ -168,12 +169,15 @@ export default function ShelfPage() {
 
   const searchFiltered = books.filter((b) => matchesSearch(b, search));
 
-  const shelfBooks = sortBooks(
-    selectedYear
-      ? searchFiltered.filter((b) => b.status === "done" && getFinishYear(b) === selectedYear)
-      : searchFiltered,
-    "finish_desc"
-  );
+  const shelfBase = selectedYear
+    ? searchFiltered.filter((b) => b.status === "done" && getFinishYear(b) === selectedYear)
+    : searchFiltered;
+  const shelfBooks =
+    shelfOrder === "added"
+      ? [...shelfBase].sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
+      : shelfOrder === "title"
+      ? [...shelfBase].sort((a, b) => (a.title || "").localeCompare(b.title || "", "ko"))
+      : sortBooks(shelfBase, "finish_desc");
 
   const openAdd = () => {
     setEditingBook(null);
@@ -309,6 +313,29 @@ export default function ShelfPage() {
                 }`}
               >
                 {y}년 · {yearCounts[y]}권
+              </button>
+            ))}
+          </div>
+        )}
+
+        {tab === "shelf" && (
+          <div className="flex items-center gap-2 mt-4">
+            <span className="text-[0.7rem] text-muted">정렬</span>
+            {[
+              { key: "date", label: "날짜순" },
+              { key: "added", label: "등록순" },
+              { key: "title", label: "제목순" },
+            ].map((o) => (
+              <button
+                key={o.key}
+                onClick={() => setShelfOrder(o.key)}
+                className={`text-xs px-3 py-1.5 rounded-full border transition ${
+                  shelfOrder === o.key
+                    ? "bg-navy border-navy text-white"
+                    : "bg-card border-rose-100 text-muted hover:border-peach-300"
+                }`}
+              >
+                {o.label}
               </button>
             ))}
           </div>
