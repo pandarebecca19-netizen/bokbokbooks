@@ -25,6 +25,7 @@ import {
 import NoteEditor from "./NoteEditor";
 import BadgeBoard from "./BadgeBoard";
 import CharacterCard from "./CharacterCard";
+import ImportBooks from "./ImportBooks";
 import GenreBadges from "./GenreBadges";
 
 const SPINE_H = 190;
@@ -44,6 +45,7 @@ export default function ShelfPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingBook, setEditingBook] = useState(null); // null = adding new
   const [detailBook, setDetailBook] = useState(null);
+  const [importOpen, setImportOpen] = useState(false);
 
   const loadBooks = useCallback(async (userId) => {
     const { data, error } = await supabase
@@ -119,6 +121,12 @@ export default function ShelfPage() {
     await supabase.from("books").delete().eq("id", bookId);
     await loadBooks(user.id);
     setDetailBook(null);
+  };
+
+  const importBooks = async (newBooks) => {
+    const payload = newBooks.map((b) => ({ ...b, user_id: user.id }));
+    const { error } = await supabase.from("books").insert(payload);
+    if (!error) await loadBooks(user.id);
   };
 
   if (!user || books === null) {
@@ -199,7 +207,13 @@ export default function ShelfPage() {
   return (
     <div className="min-h-screen bg-cream pb-16">
       <div className="max-w-5xl mx-auto px-5 pt-8">
-        <div className="flex justify-end mb-1">
+        <div className="flex justify-end items-center gap-3 mb-1">
+          <button
+            onClick={() => setImportOpen(true)}
+            className="text-xs text-muted hover:text-ink transition"
+          >
+            📥 가져오기
+          </button>
           <button onClick={handleLogout} className="text-xs text-muted hover:text-ink transition">
             로그아웃
           </button>
@@ -451,6 +465,10 @@ export default function ShelfPage() {
           onSave={(fields, file) => saveBook(fields, file, detailBook.id)}
           onDelete={() => deleteBook(detailBook.id)}
         />
+      )}
+
+      {importOpen && (
+        <ImportBooks onImport={importBooks} onClose={() => setImportOpen(false)} />
       )}
     </div>
   );
