@@ -40,6 +40,7 @@ export default function ShelfPage() {
   const [selectedYear, setSelectedYear] = useState(null);
   const [search, setSearch] = useState("");
   const [shelfOrder, setShelfOrder] = useState("date"); // "date" | "added" | "title"
+  const [selectedShelf, setSelectedShelf] = useState(null); // null = 기본 책장(전체)
   const [modalOpen, setModalOpen] = useState(false);
   const [editingBook, setEditingBook] = useState(null); // null = adding new
   const [detailBook, setDetailBook] = useState(null);
@@ -169,9 +170,20 @@ export default function ShelfPage() {
 
   const searchFiltered = books.filter((b) => matchesSearch(b, search));
 
-  const shelfBase = selectedYear
-    ? searchFiltered.filter((b) => b.status === "done" && getFinishYear(b) === selectedYear)
-    : searchFiltered;
+  const shelfNames = [...new Set(books.map((b) => (b.shelf || "").trim()).filter(Boolean))].sort(
+    (a, b) => a.localeCompare(b, "ko")
+  );
+
+  let shelfBase = searchFiltered;
+  if (selectedShelf) {
+    shelfBase = shelfBase.filter((b) => (b.shelf || "").trim() === selectedShelf);
+  } else {
+    // 기본 책장: 읽는 중 + 다 읽은 책만 (읽고 싶어요 제외)
+    shelfBase = shelfBase.filter((b) => b.status === "reading" || b.status === "done");
+  }
+  if (selectedYear) {
+    shelfBase = shelfBase.filter((b) => b.status === "done" && getFinishYear(b) === selectedYear);
+  }
   const shelfBooks =
     shelfOrder === "added"
       ? [...shelfBase].sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
@@ -290,6 +302,34 @@ export default function ShelfPage() {
           </button>
         </div>
 
+        {tab === "shelf" && shelfNames.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-4">
+            <button
+              onClick={() => setSelectedShelf(null)}
+              className={`text-xs px-3 py-1.5 rounded-full border transition ${
+                selectedShelf === null
+                  ? "bg-navy border-navy text-white"
+                  : "bg-card border-rose-100 text-muted hover:border-peach-300"
+              }`}
+            >
+              📚 기본 책장
+            </button>
+            {shelfNames.map((name) => (
+              <button
+                key={name}
+                onClick={() => setSelectedShelf(selectedShelf === name ? null : name)}
+                className={`text-xs px-3 py-1.5 rounded-full border transition ${
+                  selectedShelf === name
+                    ? "bg-navy border-navy text-white"
+                    : "bg-card border-rose-100 text-muted hover:border-peach-300"
+                }`}
+              >
+                {name}
+              </button>
+            ))}
+          </div>
+        )}
+
         {tab === "shelf" && years.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-4">
             <button
@@ -393,6 +433,7 @@ export default function ShelfPage() {
         <BookDetail
           book={editingBook}
           genreColors={genreColors}
+          shelfNames={shelfNames}
           onClose={() => {
             setModalOpen(false);
             setEditingBook(null);
@@ -405,6 +446,7 @@ export default function ShelfPage() {
         <BookDetail
           book={detailBook}
           genreColors={genreColors}
+          shelfNames={shelfNames}
           onClose={() => setDetailBook(null)}
           onSave={(fields, file) => saveBook(fields, file, detailBook.id)}
           onDelete={() => deleteBook(detailBook.id)}
@@ -881,13 +923,14 @@ function StatsView({ totalRead, totalPages, genreList, genreColors, yearlyStats 
 }
 
 // ---------------------------------------------------------------
-function BookDetail({ book, genreColors, onClose, onSave, onDelete }) {
+function BookDetail({ book, genreColors, shelfNames = [], onClose, onSave, onDelete }) {
   const isEdit = Boolean(book);
   const [title, setTitle] = useState(book?.title || "");
   const [author, setAuthor] = useState(book?.author || "");
   const [pages, setPages] = useState(book?.pages || "");
   const [currentPage, setCurrentPage] = useState(book?.current_page || "");
   const [price, setPrice] = useState(book?.price || "");
+  const [shelf, setShelf] = useState(book?.shelf || "");
   const [status, setStatus] = useState(book?.status || "reading");
   const [colorKey, setColorKey] = useState(book?.color_key || COLOR_SWATCHES[0].key);
   const [genre, setGenre] = useState(book?.genre || "");
@@ -938,6 +981,7 @@ function BookDetail({ book, genreColors, onClose, onSave, onDelete }) {
         current_page: status === "reading" && currentPage ? Number(currentPage) : null,
         rating,
         note,
+        shelf: shelf.trim() || null,
         cover_url: book?.cover_url || null,
       },
       file
@@ -1122,6 +1166,25 @@ function BookDetail({ book, genreColors, onClose, onSave, onDelete }) {
                       ))}
                     </div>
                   ))}
+              </div>
+
+              <div>
+                <p className="text-[0.68rem] text-muted mb-1">책장 (선택)</p>
+                <input
+                  list="shelf-name-options"
+                  className="rounded-lg border border-rose-100 px-2.5 py-1.5 text-sm text-ink w-full max-w-[200px]"
+                  value={shelf}
+                  onChange={(e) => setShelf(e.target.value)}
+                  placeholder="예: 세계문학전집"
+                />
+                <datalist id="shelf-name-options">
+                  {shelfNames.map((name) => (
+                    <option key={name} value={name} />
+                  ))}
+                </datalist>
+                <p className="text-[0.68rem] text-muted mt-1.5">
+                  비워두면 기본 책장에만 담겨요.
+                </p>
               </div>
             </div>
           </div>

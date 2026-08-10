@@ -16,6 +16,7 @@ create table if not exists public.books (
   finish_date date,
   price numeric,
   current_page integer,
+  shelf text,
   created_at timestamptz default now()
 );
 
