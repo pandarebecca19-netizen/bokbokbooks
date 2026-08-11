@@ -38,10 +38,8 @@ export default function ShelfPage() {
   const [displayName, setDisplayName] = useState("");
   const [books, setBooks] = useState(null);
   const [tab, setTab] = useState("shelf"); // "shelf" | "list" | "years" | "genres" | "stats"
-  const [selectedYear, setSelectedYear] = useState(null);
   const [search, setSearch] = useState("");
-  const [shelfOrder, setShelfOrder] = useState("date"); // "date" | "added" | "title"
-  const [selectedShelf, setSelectedShelf] = useState(null); // null = 기본 책장(전체)
+  const [viewMode, setViewMode] = useState("shelf"); // "shelf"(책등) | "cover"(표지)
   const [modalOpen, setModalOpen] = useState(false);
   const [editingBook, setEditingBook] = useState(null); // null = adding new
   const [detailBook, setDetailBook] = useState(null);
@@ -178,31 +176,11 @@ export default function ShelfPage() {
 
   const searchFiltered = books.filter((b) => matchesSearch(b, search));
 
-  // 책장은 장르별로 나뉨 — 읽는 중 + 다 읽은 책의 장르들 (없으면 "미분류")
-  const shelfGenres = [
-    ...new Set(
-      books
-        .filter((b) => b.status === "reading" || b.status === "done")
-        .map((b) => (b.genre || "").trim() || "미분류")
-    ),
-  ].sort((a, b) => a.localeCompare(b, "ko"));
-
-  // 책장 탭은 항상 읽는 중 + 다 읽은 책만 (읽고 싶어요 제외)
-  let shelfBase = searchFiltered.filter((b) => b.status === "reading" || b.status === "done");
-  if (selectedShelf) {
-    shelfBase = shelfBase.filter((b) => ((b.genre || "").trim() || "미분류") === selectedShelf);
-  }
-  if (selectedYear) {
-    shelfBase = shelfBase.filter((b) => b.status === "done" && getFinishYear(b) === selectedYear);
-  }
-  // 기본 책장은 항상 날짜순; 장르 책장에서만 정렬 선택이 적용됨
-  const effectiveOrder = selectedShelf ? shelfOrder : "date";
-  const shelfBooks =
-    effectiveOrder === "added"
-      ? [...shelfBase].sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
-      : effectiveOrder === "title"
-      ? [...shelfBase].sort((a, b) => (a.title || "").localeCompare(b.title || "", "ko"))
-      : sortBooks(shelfBase, "finish_desc");
+  // 책장 탭 = 전체 컬렉션(읽는 중 + 다 읽은 책), 날짜순. 장르/연도는 각각의 탭에서.
+  const shelfBooks = sortBooks(
+    searchFiltered.filter((b) => b.status === "reading" || b.status === "done"),
+    "finish_desc"
+  );
 
   const openAdd = () => {
     setEditingBook(null);
@@ -321,98 +299,24 @@ export default function ShelfPage() {
           </button>
         </div>
 
-        {tab === "shelf" && shelfGenres.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-4">
-            <button
-              onClick={() => setSelectedShelf(null)}
-              className={`text-xs px-3 py-1.5 rounded-full border transition ${
-                selectedShelf === null
-                  ? "bg-navy border-navy text-white"
-                  : "bg-card border-rose-100 text-muted hover:border-peach-300"
-              }`}
-            >
-              📚 기본 책장
-            </button>
-            {shelfGenres.map((name) => (
-              <button
-                key={name}
-                onClick={() => setSelectedShelf(selectedShelf === name ? null : name)}
-                className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition ${
-                  selectedShelf === name
-                    ? "bg-navy border-navy text-white"
-                    : "bg-card border-rose-100 text-muted hover:border-peach-300"
-                }`}
-              >
-                {genreColors[name] && (
-                  <span className="w-2.5 h-2.5 rounded-full" style={{ background: genreColors[name] }} />
-                )}
-                {name}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {tab === "shelf" && years.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-4">
-            <button
-              onClick={() => setSelectedYear(null)}
-              className={`text-xs px-3 py-1.5 rounded-full border transition ${
-                selectedYear === null
-                  ? "bg-navy border-navy text-white"
-                  : "bg-card border-rose-100 text-muted hover:border-peach-300"
-              }`}
-            >
-              전체
-            </button>
-            {years.map((y) => (
-              <button
-                key={y}
-                onClick={() => setSelectedYear(selectedYear === y ? null : y)}
-                className={`text-xs px-3 py-1.5 rounded-full border transition ${
-                  selectedYear === y
-                    ? "bg-navy border-navy text-white"
-                    : "bg-card border-rose-100 text-muted hover:border-peach-300"
-                }`}
-              >
-                {y}년 · {yearCounts[y]}권
-              </button>
-            ))}
-          </div>
-        )}
-
-        {tab === "shelf" && selectedShelf && (
+        {(tab === "shelf" || tab === "years" || tab === "genres") && (
           <div className="flex items-center gap-2 mt-4">
-            <span className="text-[0.7rem] text-muted">정렬</span>
+            <span className="text-[0.7rem] text-muted">보기</span>
             {[
-              { key: "date", label: "날짜순" },
-              { key: "added", label: "등록순" },
-              { key: "title", label: "제목순" },
-            ].map((o) => (
+              { key: "shelf", label: "📚 책장형" },
+              { key: "cover", label: "🖼️ 표지형" },
+            ].map((v) => (
               <button
-                key={o.key}
-                onClick={() => setShelfOrder(o.key)}
+                key={v.key}
+                onClick={() => setViewMode(v.key)}
                 className={`text-xs px-3 py-1.5 rounded-full border transition ${
-                  shelfOrder === o.key
+                  viewMode === v.key
                     ? "bg-navy border-navy text-white"
                     : "bg-card border-rose-100 text-muted hover:border-peach-300"
                 }`}
               >
-                {o.label}
+                {v.label}
               </button>
-            ))}
-          </div>
-        )}
-
-        {tab === "shelf" && Object.keys(genreColors).length > 0 && (
-          <div className="flex flex-wrap gap-3 mt-4">
-            {Object.entries(genreColors).map(([genre, color]) => (
-              <div key={genre} className="flex items-center gap-1.5 text-[0.7rem] text-muted">
-                <span
-                  className="w-3 h-3 rounded-full"
-                  style={{ background: color, boxShadow: "0 1px 2px rgba(0,0,0,0.2)" }}
-                />
-                {genre}
-              </div>
             ))}
           </div>
         )}
@@ -420,12 +324,7 @@ export default function ShelfPage() {
 
       <div className="mt-6">
         {tab === "shelf" && (
-          <ShelfView
-            books={shelfBooks}
-            allEmpty={books.length === 0}
-            selectedYear={selectedYear}
-            onSelect={(b) => setDetailBook(b)}
-          />
+          <BooksView books={shelfBooks} viewMode={viewMode} onSelect={(b) => setDetailBook(b)} />
         )}
 
         {tab === "list" && (
@@ -433,11 +332,21 @@ export default function ShelfPage() {
         )}
 
         {tab === "years" && (
-          <YearsView books={searchFiltered} years={years} onSelect={(b) => setDetailBook(b)} />
+          <YearsView
+            books={searchFiltered}
+            years={years}
+            viewMode={viewMode}
+            onSelect={(b) => setDetailBook(b)}
+          />
         )}
 
         {tab === "genres" && (
-          <GenresView books={searchFiltered} genreColors={genreColors} onSelect={(b) => setDetailBook(b)} />
+          <GenresView
+            books={searchFiltered}
+            genreColors={genreColors}
+            viewMode={viewMode}
+            onSelect={(b) => setDetailBook(b)}
+          />
         )}
 
         {tab === "stats" && (
@@ -496,7 +405,31 @@ function useIsMobile() {
   return isMobile;
 }
 
-function ShelfView({ books, allEmpty, selectedYear, onSelect }) {
+// picks the bookshelf (spine) view or the cover-grid view for a list
+function BooksView({ books, viewMode, onSelect }) {
+  return viewMode === "cover" ? (
+    <CoverGrid books={books} onSelect={onSelect} />
+  ) : (
+    <SpineShelf books={books} onSelect={onSelect} />
+  );
+}
+
+function CoverGrid({ books, onSelect }) {
+  if (books.length === 0) {
+    return <p className="max-w-5xl mx-auto px-5 text-sm text-muted">아직 책이 없어요.</p>;
+  }
+  return (
+    <div className="max-w-5xl mx-auto px-5">
+      <div className="grid grid-cols-3 md:grid-cols-4 gap-3 sm:gap-5">
+        {books.map((b) => (
+          <CoverCard key={b.id} book={b} onSelect={onSelect} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SpineShelf({ books, onSelect }) {
   const isMobile = useIsMobile();
   const spineH = isMobile ? MOBILE_SPINE_H : SPINE_H;
   const pattern = spineH + ROW_GAP;
@@ -520,16 +453,9 @@ function ShelfView({ books, allEmpty, selectedYear, onSelect }) {
             )`,
           }}
         >
-          {allEmpty && (
+          {books.length === 0 && (
             <div className="w-full text-center py-16 text-muted font-serif">
-              아직 책장이 비어있어요.
-              <br />
-              읽은 책을 기록해서 채워보세요.
-            </div>
-          )}
-          {!allEmpty && books.length === 0 && (
-            <div className="w-full text-center py-16 text-muted font-serif">
-              {selectedYear}년에 다 읽은 책이 아직 없어요.
+              여기에 꽂힌 책이 아직 없어요.
             </div>
           )}
           {books.map((b) => {
@@ -768,7 +694,7 @@ function AllBooksView({ books, onSelect }) {
 }
 
 // ---------------------------------------------------------------
-function YearsView({ books, years, onSelect }) {
+function YearsView({ books, years, viewMode, onSelect }) {
   const [selectedYear, setSelectedYear] = useState(years[0] || null);
 
   if (years.length === 0) {
@@ -778,41 +704,36 @@ function YearsView({ books, years, onSelect }) {
   const yearBooks = books.filter((b) => b.status === "done" && getFinishYear(b) === selectedYear);
 
   return (
-    <div className="max-w-5xl mx-auto px-5">
-      <div className="flex flex-wrap gap-2 mb-6">
-        {years.map((year) => (
-          <button
-            key={year}
-            onClick={() => setSelectedYear(year)}
-            className={`text-sm px-4 py-2 rounded-full border transition ${
-              selectedYear === year
-                ? "bg-navy border-navy text-white"
-                : "bg-card border-rose-100 text-muted hover:border-peach-300"
-            }`}
-          >
-            {year}년
-          </button>
-        ))}
-      </div>
-
-      <p className="font-serif text-lg text-ink mb-3">
-        {selectedYear}년 <span className="text-sm text-muted">· {yearBooks.length}권</span>
-      </p>
-      {yearBooks.length === 0 ? (
-        <p className="text-sm text-muted">이 해에 다 읽은 책이 없어요.</p>
-      ) : (
-        <div className="grid grid-cols-3 md:grid-cols-4 gap-3 sm:gap-5">
-          {yearBooks.map((b) => (
-            <CoverCard key={b.id} book={b} onSelect={onSelect} />
+    <div>
+      <div className="max-w-5xl mx-auto px-5">
+        <div className="flex flex-wrap gap-2 mb-4">
+          {years.map((year) => (
+            <button
+              key={year}
+              onClick={() => setSelectedYear(year)}
+              className={`text-sm px-4 py-2 rounded-full border transition ${
+                selectedYear === year
+                  ? "bg-navy border-navy text-white"
+                  : "bg-card border-rose-100 text-muted hover:border-peach-300"
+              }`}
+            >
+              {year}년
+            </button>
           ))}
         </div>
-      )}
+
+        <p className="font-serif text-lg text-ink mb-3">
+          {selectedYear}년 <span className="text-sm text-muted">· {yearBooks.length}권</span>
+        </p>
+      </div>
+
+      <BooksView books={yearBooks} viewMode={viewMode} onSelect={onSelect} />
     </div>
   );
 }
 
 // ---------------------------------------------------------------
-function GenresView({ books, genreColors, onSelect }) {
+function GenresView({ books, genreColors, viewMode, onSelect }) {
   const groups = {};
   books.forEach((b) => {
     const g = (b.genre || "").trim() || "미분류";
@@ -831,45 +752,44 @@ function GenresView({ books, genreColors, onSelect }) {
   const doneCountForGenre = genreBooks.filter((b) => b.status === "done").length;
 
   return (
-    <div className="max-w-5xl mx-auto px-5">
-      <div className="flex flex-wrap gap-2 mb-6">
-        {genreNames.map((genre) => (
-          <button
-            key={genre}
-            onClick={() => setSelectedGenre(genre)}
-            className={`flex items-center gap-1.5 text-sm px-4 py-2 rounded-full border transition ${
-              selectedGenre === genre
-                ? "bg-navy border-navy text-white"
-                : "bg-card border-rose-100 text-muted hover:border-peach-300"
-            }`}
-          >
-            {genreColors[genre] && (
-              <span
-                className="w-2.5 h-2.5 rounded-full"
-                style={{ background: genreColors[genre] }}
-              />
-            )}
-            {genre}
-          </button>
-        ))}
+    <div>
+      <div className="max-w-5xl mx-auto px-5">
+        <div className="flex flex-wrap gap-2 mb-4">
+          {genreNames.map((genre) => (
+            <button
+              key={genre}
+              onClick={() => setSelectedGenre(genre)}
+              className={`flex items-center gap-1.5 text-sm px-4 py-2 rounded-full border transition ${
+                selectedGenre === genre
+                  ? "bg-navy border-navy text-white"
+                  : "bg-card border-rose-100 text-muted hover:border-peach-300"
+              }`}
+            >
+              {genreColors[genre] && (
+                <span
+                  className="w-2.5 h-2.5 rounded-full"
+                  style={{ background: genreColors[genre] }}
+                />
+              )}
+              {genre}
+            </button>
+          ))}
+        </div>
+
+        <GenreBadges key={selectedGenre} genre={selectedGenre} count={doneCountForGenre} />
+
+        <p className="font-serif text-lg text-ink mb-3 flex items-center gap-2">
+          {genreColors[selectedGenre] && (
+            <span
+              className="w-3 h-3 rounded-full"
+              style={{ background: genreColors[selectedGenre], boxShadow: "0 1px 2px rgba(0,0,0,0.2)" }}
+            />
+          )}
+          {selectedGenre} <span className="text-sm text-muted">· {genreBooks.length}권</span>
+        </p>
       </div>
 
-      <GenreBadges key={selectedGenre} genre={selectedGenre} count={doneCountForGenre} />
-
-      <p className="font-serif text-lg text-ink mb-3 flex items-center gap-2">
-        {genreColors[selectedGenre] && (
-          <span
-            className="w-3 h-3 rounded-full"
-            style={{ background: genreColors[selectedGenre], boxShadow: "0 1px 2px rgba(0,0,0,0.2)" }}
-          />
-        )}
-        {selectedGenre} <span className="text-sm text-muted">· {genreBooks.length}권</span>
-      </p>
-      <div className="grid grid-cols-3 md:grid-cols-4 gap-3 sm:gap-5">
-        {genreBooks.map((b) => (
-          <CoverCard key={b.id} book={b} onSelect={onSelect} />
-        ))}
-      </div>
+      <BooksView books={genreBooks} viewMode={viewMode} onSelect={onSelect} />
     </div>
   );
 }
