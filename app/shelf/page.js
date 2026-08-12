@@ -1164,11 +1164,17 @@ function BookDetail({ book, genreColors, seriesNames = [], onClose, onSave, onDe
               <div>
                 <p className="text-[0.68rem] text-muted mb-1">장르</p>
                 <input
+                  list="genre-name-options"
                   className="rounded-lg border border-rose-100 px-2.5 py-1.5 text-sm text-ink w-full max-w-[200px]"
                   value={genre}
                   onChange={(e) => handleGenreChange(e.target.value)}
                   placeholder="예: 에세이"
                 />
+                <datalist id="genre-name-options">
+                  {Object.keys(genreColors).map((name) => (
+                    <option key={name} value={name} />
+                  ))}
+                </datalist>
                 {trimmedGenre &&
                   (existingGenreColor ? (
                     <p className="text-[0.68rem] text-muted mt-1.5 flex items-center gap-1.5">
