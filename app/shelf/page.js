@@ -182,6 +182,11 @@ export default function ShelfPage() {
     "finish_desc"
   );
 
+  // 이미 쓰인 시리즈 이름들 (책 편집 시 자동완성용)
+  const seriesNames = [
+    ...new Set(books.map((b) => (b.shelf || "").trim()).filter(Boolean)),
+  ].sort((a, b) => a.localeCompare(b, "ko"));
+
   const openAdd = () => {
     setEditingBook(null);
     setModalOpen(true);
@@ -244,7 +249,7 @@ export default function ShelfPage() {
         </div>
 
         {/* tabs + add */}
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 mt-4">
+        <div className="grid grid-cols-3 sm:grid-cols-7 gap-3 mt-4">
           <button
             onClick={() => setTab("shelf")}
             className={`bg-card rounded-xl2 shadow-card px-3 py-4 flex flex-col items-center gap-1.5 transition hover:-translate-y-0.5 ${
@@ -282,6 +287,15 @@ export default function ShelfPage() {
             <span className="text-xs text-ink font-medium">장르별</span>
           </button>
           <button
+            onClick={() => setTab("series")}
+            className={`bg-card rounded-xl2 shadow-card px-3 py-4 flex flex-col items-center gap-1.5 transition hover:-translate-y-0.5 ${
+              tab === "series" ? "ring-2 ring-peach-400" : ""
+            }`}
+          >
+            <span className="text-xl">📖</span>
+            <span className="text-xs text-ink font-medium">시리즈</span>
+          </button>
+          <button
             onClick={() => setTab("stats")}
             className={`bg-card rounded-xl2 shadow-card px-3 py-4 flex flex-col items-center gap-1.5 transition hover:-translate-y-0.5 ${
               tab === "stats" ? "ring-2 ring-peach-400" : ""
@@ -299,7 +313,7 @@ export default function ShelfPage() {
           </button>
         </div>
 
-        {(tab === "shelf" || tab === "years" || tab === "genres") && (
+        {(tab === "shelf" || tab === "years" || tab === "genres" || tab === "series") && (
           <div className="flex items-center gap-2 mt-4">
             <span className="text-[0.7rem] text-muted">보기</span>
             {[
@@ -349,6 +363,10 @@ export default function ShelfPage() {
           />
         )}
 
+        {tab === "series" && (
+          <SeriesView books={searchFiltered} viewMode={viewMode} onSelect={(b) => setDetailBook(b)} />
+        )}
+
         {tab === "stats" && (
           <StatsView
             books={books}
@@ -365,6 +383,7 @@ export default function ShelfPage() {
         <BookDetail
           book={editingBook}
           genreColors={genreColors}
+          seriesNames={seriesNames}
           onClose={() => {
             setModalOpen(false);
             setEditingBook(null);
@@ -377,6 +396,7 @@ export default function ShelfPage() {
         <BookDetail
           book={detailBook}
           genreColors={genreColors}
+          seriesNames={seriesNames}
           onClose={() => setDetailBook(null)}
           onSave={(fields, file) => saveBook(fields, file, detailBook.id)}
           onDelete={() => deleteBook(detailBook.id)}
@@ -795,6 +815,61 @@ function GenresView({ books, genreColors, viewMode, onSelect }) {
 }
 
 // ---------------------------------------------------------------
+// 시리즈 책장 — 시리즈(shelf 컬럼)가 입력된 책만 시리즈별로 모아 보여줌
+function SeriesView({ books, viewMode, onSelect }) {
+  const groups = {};
+  books.forEach((b) => {
+    const s = (b.shelf || "").trim();
+    if (!s) return;
+    if (!groups[s]) groups[s] = [];
+    groups[s].push(b);
+  });
+  const seriesNames = Object.keys(groups).sort((a, b) => groups[b].length - groups[a].length);
+
+  const [selected, setSelected] = useState(seriesNames[0] || null);
+
+  if (seriesNames.length === 0) {
+    return (
+      <p className="text-center py-16 font-serif text-muted">
+        아직 시리즈로 지정된 책이 없어요.
+        <br />책을 수정해서 "시리즈"를 입력해보세요.
+      </p>
+    );
+  }
+
+  const current = groups[selected] ? selected : seriesNames[0];
+  const seriesBooks = groups[current] || [];
+
+  return (
+    <div>
+      <div className="max-w-5xl mx-auto px-5">
+        <div className="flex flex-wrap gap-2 mb-4">
+          {seriesNames.map((name) => (
+            <button
+              key={name}
+              onClick={() => setSelected(name)}
+              className={`text-sm px-4 py-2 rounded-full border transition ${
+                current === name
+                  ? "bg-navy border-navy text-white"
+                  : "bg-card border-rose-100 text-muted hover:border-peach-300"
+              }`}
+            >
+              📖 {name}
+            </button>
+          ))}
+        </div>
+
+        <p className="font-serif text-lg text-ink mb-3">
+          {current} <span className="text-sm text-muted">· {seriesBooks.length}권</span>
+        </p>
+      </div>
+
+      <BooksView books={seriesBooks} viewMode={viewMode} onSelect={onSelect} />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------
 function StatsView({ books, totalRead, totalPages, genreList, genreColors, yearlyStats }) {
   const won = (n) => `${n.toLocaleString("ko-KR")}원`;
   const pg = (n) => `${n.toLocaleString("ko-KR")}쪽`;
@@ -871,13 +946,14 @@ function StatsView({ books, totalRead, totalPages, genreList, genreColors, yearl
 }
 
 // ---------------------------------------------------------------
-function BookDetail({ book, genreColors, onClose, onSave, onDelete }) {
+function BookDetail({ book, genreColors, seriesNames = [], onClose, onSave, onDelete }) {
   const isEdit = Boolean(book);
   const [title, setTitle] = useState(book?.title || "");
   const [author, setAuthor] = useState(book?.author || "");
   const [pages, setPages] = useState(book?.pages || "");
   const [currentPage, setCurrentPage] = useState(book?.current_page || "");
   const [price, setPrice] = useState(book?.price || "");
+  const [series, setSeries] = useState(book?.shelf || "");
   const [status, setStatus] = useState(book?.status || "reading");
   const [colorKey, setColorKey] = useState(book?.color_key || COLOR_SWATCHES[0].key);
   const [genre, setGenre] = useState(book?.genre || "");
@@ -928,6 +1004,7 @@ function BookDetail({ book, genreColors, onClose, onSave, onDelete }) {
         current_page: status === "reading" && currentPage ? Number(currentPage) : null,
         rating,
         note,
+        shelf: series.trim() || null,
         cover_url: book?.cover_url || null,
       },
       file
@@ -1112,6 +1189,23 @@ function BookDetail({ book, genreColors, onClose, onSave, onDelete }) {
                       ))}
                     </div>
                   ))}
+              </div>
+
+              <div>
+                <p className="text-[0.68rem] text-muted mb-1">시리즈 (선택)</p>
+                <input
+                  list="series-name-options"
+                  className="rounded-lg border border-rose-100 px-2.5 py-1.5 text-sm text-ink w-full max-w-[200px]"
+                  value={series}
+                  onChange={(e) => setSeries(e.target.value)}
+                  placeholder="예: 해리 포터"
+                />
+                <datalist id="series-name-options">
+                  {seriesNames.map((name) => (
+                    <option key={name} value={name} />
+                  ))}
+                </datalist>
+                <p className="text-[0.68rem] text-muted mt-1.5">입력하면 시리즈 책장에 모여요.</p>
               </div>
 
             </div>
