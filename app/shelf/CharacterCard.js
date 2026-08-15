@@ -2,13 +2,33 @@
 
 import { useState } from "react";
 import {
+  LEVELS,
   levelProgress,
   characterStageFor,
   nextStageFor,
   pagesToStage,
   levelHistory,
+  heightCmFromPages,
+  formatHeightCm,
 } from "../../lib/character";
 import { formatDate } from "../../lib/constants";
+
+function CollectedBadge({ unlocked, stage }) {
+  return (
+    <div className="flex flex-col items-center gap-1 w-14">
+      <div
+        className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${
+          unlocked ? "bg-peach-500" : "bg-rose-50"
+        }`}
+      >
+        {unlocked ? stage.emoji : "🔒"}
+      </div>
+      <span className={`text-[0.58rem] text-center leading-tight ${unlocked ? "text-ink" : "text-muted"}`}>
+        {stage.name}
+      </span>
+    </div>
+  );
+}
 
 function CharacterDetail({ books, totalPages, onClose }) {
   const p = levelProgress(totalPages);
@@ -17,8 +37,8 @@ function CharacterDetail({ books, totalPages, onClose }) {
   const doneBooks = books.filter((b) => b.status === "done");
   const history = levelHistory(doneBooks);
 
-  // Lv.1(시작) + 각 레벨 달성 기록
-  const rows = [{ level: 1, date: null, stage: characterStageFor(1) }, ...history];
+  // Lv.0(시작) + 각 레벨 달성 기록
+  const rows = [{ level: 0, date: null, stage: characterStageFor(0), isStart: true }, ...history];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/30 px-6" onClick={onClose}>
@@ -30,7 +50,9 @@ function CharacterDetail({ books, totalPages, onClose }) {
           <span className="text-5xl" style={{ lineHeight: 1 }}>{stage.emoji}</span>
           <div>
             <p className="font-serif text-xl text-ink">Lv.{p.level} · {stage.name}</p>
-            <p className="text-xs text-muted mt-0.5">지금까지 {p.exp.toLocaleString("ko-KR")}쪽 읽음</p>
+            <p className="text-xs text-muted mt-0.5">
+              지금까지 {p.exp.toLocaleString("ko-KR")}쪽 · 쌓으면 약 {formatHeightCm(heightCmFromPages(p.exp))}
+            </p>
           </div>
         </div>
 
@@ -43,11 +65,23 @@ function CharacterDetail({ books, totalPages, onClose }) {
                 <p className="text-sm text-ink">
                   Lv.{r.level} · {r.stage.name}
                 </p>
+                {r.stage.pages > 0 && (
+                  <p className="text-[0.65rem] text-muted">약 {formatHeightCm(heightCmFromPages(r.stage.pages))}</p>
+                )}
               </div>
               <span className="text-[0.7rem] text-muted whitespace-nowrap">
-                {r.level === 1 ? "시작" : r.date ? formatDate(r.date) : "—"}
+                {r.isStart ? "시작" : r.date ? formatDate(r.date) : "—"}
               </span>
             </div>
+          ))}
+        </div>
+
+        <p className="text-sm text-ink font-medium mt-5 mb-2">
+          캐릭터 도감 ({p.level + 1}/{LEVELS.length})
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {LEVELS.map((l) => (
+            <CollectedBadge key={l.level} unlocked={l.level <= p.level} stage={l} />
           ))}
         </div>
 
@@ -58,7 +92,9 @@ function CharacterDetail({ books, totalPages, onClose }) {
               {nextStage.emoji}
             </span>
             <div>
-              <p className="text-sm text-ink">Lv.{nextStage.minLevel} 달성 시 만나요</p>
+              <p className="text-sm text-ink">
+                {nextStage.name} (약 {formatHeightCm(heightCmFromPages(nextStage.pages))}) 만나면 달성이에요
+              </p>
               <p className="text-[0.7rem] text-muted mt-0.5">
                 {pagesToStage(nextStage, totalPages).toLocaleString("ko-KR")}쪽 더 읽으면 돼요
               </p>
@@ -111,8 +147,8 @@ export default function CharacterCard({ books, totalPages }) {
           </div>
           <p className="text-[0.68rem] text-muted mt-1">
             {p.isMax
-              ? `최고 레벨 · 지금까지 ${p.exp.toLocaleString("ko-KR")}쪽 읽음`
-              : `다음 레벨까지 ${p.toNext.toLocaleString("ko-KR")}쪽 · 지금까지 ${p.exp.toLocaleString("ko-KR")}쪽`}
+              ? `최고 레벨 · 쌓은 높이 약 ${formatHeightCm(heightCmFromPages(p.exp))}`
+              : `다음 레벨까지 ${p.toNext.toLocaleString("ko-KR")}쪽 · 쌓은 높이 약 ${formatHeightCm(heightCmFromPages(p.exp))}`}
           </p>
           <p className="text-[0.62rem] text-peach-500 mt-1.5">눌러서 성장 기록 보기</p>
         </div>
