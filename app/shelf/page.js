@@ -501,6 +501,14 @@ function SpineShelf({ books, onSelect }) {
                 }}
               >
                 <span className="absolute top-0 left-[6%] right-[6%] h-[3px] bg-[rgba(250,245,235,0.55)]" />
+                {b.is_favorite && (
+                  <span
+                    className="absolute top-2 left-1/2 -translate-x-1/2 text-[0.6rem] sm:text-xs"
+                    style={{ lineHeight: 1 }}
+                  >
+                    ❤️
+                  </span>
+                )}
                 <span className="w-[70%] h-[2px] bg-[rgba(59,42,31,0.3)] mb-2 mt-1.5 shrink-0" />
                 <span
                   className="flex-1 overflow-hidden font-serif font-bold text-[0.62rem] sm:text-[0.8rem] tracking-wide max-h-full"
@@ -550,8 +558,16 @@ function CoverCard({ book, onSelect }) {
   return (
     <button
       onClick={() => onSelect(book)}
-      className="text-left bg-card rounded-xl2 shadow-card overflow-hidden hover:-translate-y-1 transition"
+      className="relative text-left bg-card rounded-xl2 shadow-card overflow-hidden hover:-translate-y-1 transition"
     >
+      {book.is_favorite && (
+        <span
+          className="absolute top-1.5 right-1.5 z-10 text-base drop-shadow"
+          style={{ lineHeight: 1 }}
+        >
+          ❤️
+        </span>
+      )}
       {book.cover_url ? (
         <img
           src={book.cover_url}
@@ -616,7 +632,10 @@ function AllBooksRow({ book, onSelect }) {
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="font-serif text-sm text-ink truncate">{book.title}</p>
+        <p className="font-serif text-sm text-ink truncate flex items-center gap-1.5">
+          {book.is_favorite && <span className="shrink-0">❤️</span>}
+          {book.title}
+        </p>
         {book.author && <p className="text-xs text-muted truncate mt-0.5">{book.author}</p>}
 
         {book.status === "reading" && (
@@ -661,9 +680,14 @@ function AllBooksView({ books, onSelect }) {
   const allCount = visibleBooks.length;
   const doneCount = visibleBooks.filter((b) => b.status === "done").length;
   const readingCount = visibleBooks.filter((b) => b.status === "reading").length;
+  const favoriteCount = visibleBooks.filter((b) => b.is_favorite).length;
 
   const filtered =
-    statusFilter === "all" ? visibleBooks : visibleBooks.filter((b) => b.status === statusFilter);
+    statusFilter === "all"
+      ? visibleBooks
+      : statusFilter === "favorite"
+      ? visibleBooks.filter((b) => b.is_favorite)
+      : visibleBooks.filter((b) => b.status === statusFilter);
   const sorted = sortBooks(filtered, sortKey);
 
   return (
@@ -674,6 +698,7 @@ function AllBooksView({ books, onSelect }) {
             { key: "all", label: `전체 (${allCount})` },
             { key: "done", label: `읽은 책 (${doneCount})` },
             { key: "reading", label: `읽고 있는 책 (${readingCount})` },
+            { key: "favorite", label: `❤️ 즐겨찾기 (${favoriteCount})` },
           ].map((t) => (
             <button
               key={t.key}
@@ -961,6 +986,7 @@ function BookDetail({ book, genreColors, seriesNames = [], onClose, onSave, onDe
   const [startDate, setStartDate] = useState(book?.start_date || "");
   const [finishDate, setFinishDate] = useState(book?.finish_date || "");
   const [rating, setRating] = useState(book?.rating || 0);
+  const [isFavorite, setIsFavorite] = useState(book?.is_favorite || false);
   const [note, setNote] = useState(book?.note || "");
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(book?.cover_url || "");
@@ -1003,6 +1029,7 @@ function BookDetail({ book, genreColors, seriesNames = [], onClose, onSave, onDe
         finish_date: finishDate || null,
         current_page: status === "reading" && currentPage ? Number(currentPage) : null,
         rating,
+        is_favorite: isFavorite,
         note,
         shelf: series.trim() || null,
         cover_url: book?.cover_url || null,
@@ -1072,12 +1099,22 @@ function BookDetail({ book, genreColors, seriesNames = [], onClose, onSave, onDe
               />
             </div>
 
-            <div className="flex gap-1 text-lg text-rose-500 mb-3">
-              {[1, 2, 3, 4, 5].map((n) => (
-                <button key={n} type="button" onClick={() => setRating(rating === n ? 0 : n)}>
-                  {n <= rating ? "★" : "☆"}
-                </button>
-              ))}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex gap-1 text-lg text-rose-500">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <button key={n} type="button" onClick={() => setRating(rating === n ? 0 : n)}>
+                    {n <= rating ? "★" : "☆"}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsFavorite((v) => !v)}
+                title={isFavorite ? "즐겨찾기 해제" : "즐겨찾기에 추가"}
+                className="text-2xl leading-none"
+              >
+                {isFavorite ? "❤️" : "🤍"}
+              </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
