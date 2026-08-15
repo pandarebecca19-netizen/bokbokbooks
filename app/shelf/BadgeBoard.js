@@ -22,23 +22,6 @@ function saveNumber(key, value) {
   }
 }
 
-function Badge({ earned, icon, label }) {
-  return (
-    <div className="flex flex-col items-center gap-1 w-16">
-      <div
-        className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${
-          earned ? "bg-peach-500" : "bg-rose-50"
-        }`}
-      >
-        {earned ? icon : "🔒"}
-      </div>
-      <span className={`text-[0.6rem] text-center leading-tight ${earned ? "text-ink" : "text-muted"}`}>
-        {label}
-      </span>
-    </div>
-  );
-}
-
 function CelebrationPopup({ item, onClose }) {
   if (!item) return null;
   return (
@@ -61,6 +44,8 @@ function CelebrationPopup({ item, onClose }) {
   );
 }
 
+// 화면에는 아무것도 그리지 않고, 1000쪽 단위 배지를 새로 얻을 때마다 축하
+// 팝업만 띄운다. 실제 배지 그리드는 BadgeCollection에 있다.
 export default function BadgeBoard({ totalPages }) {
   const [celebrate, setCelebrate] = useState(null);
   const pageCount = pageBadgeCount(totalPages);
@@ -77,26 +62,5 @@ export default function BadgeBoard({ totalPages }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageCount]);
 
-  const badges = Array.from({ length: pageCount }, (_, i) => (i + 1) * PAGE_BADGE_STEP);
-  const nextMilestone = (pageCount + 1) * PAGE_BADGE_STEP;
-  const remaining = Math.max(0, nextMilestone - totalPages);
-
-  return (
-    <div>
-      <CelebrationPopup item={celebrate} onClose={() => setCelebrate(null)} />
-      <p className="font-serif text-lg text-ink mb-3">배지</p>
-      <div className="bg-card rounded-xl2 shadow-card px-4 py-4">
-        <p className="text-sm text-ink font-medium mb-3">전체 페이지 배지</p>
-        <div className="flex gap-2 flex-wrap">
-          {badges.map((m) => (
-            <Badge key={m} earned icon="📖" label={`${m.toLocaleString("ko-KR")}쪽`} />
-          ))}
-          <Badge earned={false} icon="📖" label={`${nextMilestone.toLocaleString("ko-KR")}쪽`} />
-        </div>
-        <p className="text-[0.68rem] text-muted mt-2">
-          다음 배지까지 {remaining.toLocaleString("ko-KR")}쪽
-        </p>
-      </div>
-    </div>
-  );
+  return <CelebrationPopup item={celebrate} onClose={() => setCelebrate(null)} />;
 }

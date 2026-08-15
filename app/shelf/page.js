@@ -24,6 +24,7 @@ import {
 } from "../../lib/constants";
 import NoteEditor from "./NoteEditor";
 import BadgeBoard from "./BadgeBoard";
+import BadgeCollection from "./BadgeCollection";
 import CharacterCard from "./CharacterCard";
 import ImportBooks from "./ImportBooks";
 import GenreBadges from "./GenreBadges";
@@ -451,6 +452,7 @@ export default function ShelfPage() {
         {tab === "stats" && (
           <StatsView
             books={books}
+            doneBooks={doneBooks}
             totalRead={totalRead}
             totalPages={totalPages}
             genreList={genreList}
@@ -819,7 +821,7 @@ function AllBooksView({ books, onSelect }) {
 }
 
 // ---------------------------------------------------------------
-function StatsView({ books, totalRead, totalPages, genreList, genreColors, yearlyStats }) {
+function StatsView({ books, doneBooks, totalRead, totalPages, genreList, genreColors, yearlyStats }) {
   const won = (n) => `${n.toLocaleString("ko-KR")}원`;
   const pg = (n) => `${n.toLocaleString("ko-KR")}쪽`;
 
@@ -831,6 +833,7 @@ function StatsView({ books, totalRead, totalPages, genreList, genreColors, yearl
 
       <div>
         <BadgeBoard totalPages={totalPages} />
+        <BadgeCollection totalPages={totalPages} doneBooks={doneBooks} genreColors={genreColors} />
       </div>
 
       <div>
