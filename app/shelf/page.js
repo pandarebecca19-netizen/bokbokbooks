@@ -256,8 +256,8 @@ export default function ShelfPage() {
   };
 
   return (
-    <div className="min-h-screen bg-cream pb-16 print:hidden">
-      <div className="max-w-5xl mx-auto px-5 pt-8">
+    <div className="min-h-screen bg-cream pb-16">
+      <div className="max-w-5xl mx-auto px-5 pt-8 print:hidden">
         <div className="flex justify-end items-center gap-3 mb-1">
           <button
             onClick={() => setImportOpen(true)}
@@ -445,7 +445,7 @@ export default function ShelfPage() {
         )}
       </div>
 
-      <div className="mt-6">
+      <div className="mt-6 print:hidden">
         {tab === "shelf" && (
           <>
             {filterType === "genre" && filterValue && (
