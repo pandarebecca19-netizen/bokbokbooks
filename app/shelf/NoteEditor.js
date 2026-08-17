@@ -3,9 +3,66 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Toggle, ToggleSummary, ToggleContent } from "../../lib/tiptapToggle";
 import { toDoc } from "../../lib/noteContent";
+
+// 브라우저 자체 음성인식(Web Speech API) — 크롬 계열에서 잘 되고, 사파리/인앱
+// 브라우저 등 지원하지 않는 곳에서는 버튼 자체를 숨긴다.
+function useSpeechRecognition(editor) {
+  const [listening, setListening] = useState(false);
+  const recognitionRef = useRef(null);
+  const supported =
+    typeof window !== "undefined" && !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+
+  const toggleListening = () => {
+    if (!supported || !editor) return;
+
+    if (listening) {
+      recognitionRef.current?.stop();
+      return;
+    }
+
+    const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognitionCtor();
+    recognition.lang = "ko-KR";
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    recognition.onresult = (event) => {
+      let finalTranscript = "";
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        }
+      }
+      if (finalTranscript) {
+        editor.chain().focus().insertContent(`${finalTranscript} `).run();
+      }
+    };
+
+    recognition.onerror = (event) => {
+      if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+        alert("마이크 권한을 허용해주세요.");
+      }
+      setListening(false);
+    };
+
+    recognition.onend = () => {
+      setListening(false);
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+    setListening(true);
+  };
+
+  useEffect(() => {
+    return () => recognitionRef.current?.stop();
+  }, []);
+
+  return { supported, listening, toggleListening };
+}
 
 function ToolbarButton({ onClick, active, label, children }) {
   return (
@@ -71,6 +128,8 @@ export default function NoteEditor({ value, onChange }) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editor]);
+
+  const { supported: speechSupported, listening, toggleListening } = useSpeechRecognition(editor);
 
   if (!editor) return null;
 
@@ -152,6 +211,15 @@ export default function NoteEditor({ value, onChange }) {
         <ToolbarButton label="링크" active={editor.isActive("link")} onClick={setLink}>
           🔗 링크
         </ToolbarButton>
+        {speechSupported && (
+          <ToolbarButton
+            label={listening ? "음성 입력 중지" : "음성으로 입력"}
+            active={listening}
+            onClick={toggleListening}
+          >
+            {listening ? "🔴 듣는 중…" : "🎤 음성 입력"}
+          </ToolbarButton>
+        )}
       </div>
 
       <EditorContent editor={editor} />
