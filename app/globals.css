@@ -32,21 +32,11 @@ button:focus-visible {
   outline-offset: 1px;
 }
 
-/* prints only the .print-area content (used by the book detail's 인쇄하기) */
+/* book detail's 인쇄하기 — everything else is hidden via `print:hidden` right
+   on those elements (see BookDetail in app/shelf/page.js), so the printable
+   section stays in normal document flow and paginates properly across pages
+   instead of being confined to one page like a position:absolute overlay would. */
 @media print {
-  body * {
-    visibility: hidden;
-  }
-  .print-area,
-  .print-area * {
-    visibility: visible;
-  }
-  .print-area {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-  }
   .print-note-content {
     font-size: 0.95rem;
     line-height: 1.8;

@@ -256,7 +256,7 @@ export default function ShelfPage() {
   };
 
   return (
-    <div className="min-h-screen bg-cream pb-16">
+    <div className="min-h-screen bg-cream pb-16 print:hidden">
       <div className="max-w-5xl mx-auto px-5 pt-8">
         <div className="flex justify-end items-center gap-3 mb-1">
           <button
@@ -991,8 +991,8 @@ function BookDetail({ book, genreColors, seriesNames = [], onClose, onSave, onDe
   };
 
   return (
-    <div className="fixed inset-0 bg-cream z-50 overflow-y-auto">
-      <div className="max-w-5xl mx-auto px-6 pt-6">
+    <div className="fixed inset-0 bg-cream z-50 overflow-y-auto print:static print:overflow-visible">
+      <div className="max-w-5xl mx-auto px-6 pt-6 print:hidden">
         <div className="flex items-center justify-between mb-4">
           <button onClick={onClose} className="text-sm text-muted hover:text-ink transition">
             ← 뒤로
@@ -1215,11 +1215,11 @@ function BookDetail({ book, genreColors, seriesNames = [], onClose, onSave, onDe
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-6 mt-8 pb-16">
+      <div className="max-w-5xl mx-auto px-6 mt-8 pb-16 print:hidden">
         <NoteEditor value={note} onChange={setNote} />
       </div>
 
-      <div className="max-w-5xl mx-auto px-6 pb-16">
+      <div className="max-w-5xl mx-auto px-6 pb-16 print:hidden">
         <div className="flex justify-between items-center mt-6">
           <div>
             {isEdit && onDelete && (
@@ -1244,7 +1244,7 @@ function BookDetail({ book, genreColors, seriesNames = [], onClose, onSave, onDe
       </div>
 
       {/* 인쇄용 — 화면에는 안 보이고, 인쇄할 때만 이 부분만 출력된다 */}
-      <div className="print-area hidden print:block p-10">
+      <div className="hidden print:block p-10">
         <div className="flex gap-6 items-start">
           {preview && (
             <img
@@ -1260,11 +1260,10 @@ function BookDetail({ book, genreColors, seriesNames = [], onClose, onSave, onDe
             <div className="mt-1.5">
               <Stars value={rating} />
             </div>
-            {pages && <p className="text-sm text-gray-600 mt-3">쪽수: {Number(pages).toLocaleString("ko-KR")}쪽</p>}
-            <p className={`text-sm text-gray-600${pages ? "" : " mt-3"}`}>
-              읽은 날짜: {printDateRange(startDate, finishDate)}
-            </p>
+            <p className="text-sm text-gray-600 mt-3">읽은 날짜: {printDateRange(startDate, finishDate)}</p>
             <p className="text-sm text-gray-600">장르: {trimmedGenre || "-"}</p>
+            {series.trim() && <p className="text-sm text-gray-600">시리즈: {series.trim()}</p>}
+            {pages && <p className="text-sm text-gray-600">쪽수: {Number(pages).toLocaleString("ko-KR")}쪽</p>}
           </div>
         </div>
         <hr className="my-6 border-gray-300" />
