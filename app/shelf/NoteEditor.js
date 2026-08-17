@@ -5,26 +5,7 @@ import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import { useEffect } from "react";
 import { Toggle, ToggleSummary, ToggleContent } from "../../lib/tiptapToggle";
-
-// Old notes were saved as plain text. New notes are saved as a
-// JSON string (Tiptap/ProseMirror document). This turns either form
-// into the JSON the editor expects, so nothing written before is lost.
-function toDoc(raw) {
-  if (!raw) return { type: "doc", content: [{ type: "paragraph" }] };
-  try {
-    const parsed = JSON.parse(raw);
-    if (parsed && parsed.type === "doc") return parsed;
-  } catch (e) {
-    // not JSON — treat as legacy plain text
-  }
-  const paragraphs = String(raw)
-    .split("\n")
-    .map((line) => ({
-      type: "paragraph",
-      content: line ? [{ type: "text", text: line }] : [],
-    }));
-  return { type: "doc", content: paragraphs.length ? paragraphs : [{ type: "paragraph" }] };
-}
+import { toDoc } from "../../lib/noteContent";
 
 function ToolbarButton({ onClick, active, label, children }) {
   return (

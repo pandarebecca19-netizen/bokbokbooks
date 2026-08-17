@@ -23,6 +23,7 @@ import {
   sortBooks,
 } from "../../lib/constants";
 import NoteEditor from "./NoteEditor";
+import { noteToHtml } from "../../lib/noteContent";
 import BadgeBoard from "./BadgeBoard";
 import BadgeCollection from "./BadgeCollection";
 import CharacterCard from "./CharacterCard";
@@ -984,9 +985,17 @@ function BookDetail({ book, genreColors, seriesNames = [], onClose, onSave, onDe
   return (
     <div className="fixed inset-0 bg-cream z-50 overflow-y-auto">
       <div className="max-w-5xl mx-auto px-6 pt-6">
-        <button onClick={onClose} className="text-sm text-muted hover:text-ink transition mb-4">
-          ← 뒤로
-        </button>
+        <div className="flex items-center justify-between mb-4">
+          <button onClick={onClose} className="text-sm text-muted hover:text-ink transition">
+            ← 뒤로
+          </button>
+          <button
+            onClick={() => window.print()}
+            className="text-sm text-muted hover:text-ink transition"
+          >
+            🖨️ 인쇄하기
+          </button>
+        </div>
 
         <div className="flex gap-6 flex-wrap items-start">
           <label
@@ -1224,6 +1233,31 @@ function BookDetail({ book, genreColors, seriesNames = [], onClose, onSave, onDe
             </button>
           </div>
         </div>
+      </div>
+
+      {/* 인쇄용 — 화면에는 안 보이고, 인쇄할 때만 이 부분만 출력된다 */}
+      <div className="print-area hidden print:block p-10">
+        <div className="flex gap-6 items-start">
+          {preview && (
+            <img
+              src={preview}
+              alt="표지"
+              className="w-36 shrink-0 rounded"
+              style={{ aspectRatio: "2 / 3", objectFit: "cover" }}
+            />
+          )}
+          <div>
+            <h1 className="font-serif text-2xl font-bold">{title || "제목 없음"}</h1>
+            {author && <p className="text-base text-gray-600 mt-1">{author}</p>}
+            <p className="text-sm text-gray-600 mt-3">읽은 날짜: {formatDate(finishDate) || "-"}</p>
+            <p className="text-sm text-gray-600">장르: {trimmedGenre || "-"}</p>
+          </div>
+        </div>
+        <hr className="my-6 border-gray-300" />
+        <div
+          className="print-note-content"
+          dangerouslySetInnerHTML={{ __html: noteToHtml(note) }}
+        />
       </div>
     </div>
   );

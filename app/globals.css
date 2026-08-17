@@ -31,3 +31,39 @@ button:focus-visible {
   outline: 2px solid #d98c86;
   outline-offset: 1px;
 }
+
+/* prints only the .print-area content (used by the book detail's 인쇄하기) */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+  .print-note-content {
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: #3a2e2b;
+  }
+  .print-note-content p {
+    margin: 0.4em 0;
+  }
+  .print-note-content ul {
+    list-style: disc;
+    padding-left: 1.4em;
+    margin: 0.4em 0;
+  }
+  .print-note-content [data-type="toggle-summary"] {
+    font-weight: 700;
+  }
+  .print-note-content [data-type="toggle-content"] {
+    margin: 0.2em 0 0.6em 1em;
+  }
+}
