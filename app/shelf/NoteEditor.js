@@ -64,7 +64,16 @@ export default function NoteEditor({ value, onChange }) {
     editorProps: {
       attributes: {
         class: "note-editor-content focus:outline-none",
+        spellcheck: "false",
       },
+    },
+    // 맞춤법 빨간 줄은 실제로 입력 중일 때만 보이고, 다른 곳을 누르면(포커스를
+    // 벗어나면) 바로 사라지도록 — 안 쓰는 부분까지 빨간 줄 투성이로 보이지 않게.
+    onFocus: ({ editor }) => {
+      editor.view.dom.setAttribute("spellcheck", "true");
+    },
+    onBlur: ({ editor }) => {
+      editor.view.dom.setAttribute("spellcheck", "false");
     },
     onUpdate: ({ editor }) => {
       onChange(JSON.stringify(editor.getJSON()));
