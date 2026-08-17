@@ -913,6 +913,14 @@ function StatsView({ books, doneBooks, totalRead, totalPages, genreList, genreCo
   );
 }
 
+// 인쇄용 날짜 표시: 시작일~종료일, 하루만에 다 읽었으면 그 날 하루만
+function printDateRange(startDate, finishDate) {
+  const s = formatDate(startDate);
+  const f = formatDate(finishDate);
+  if (s && f) return startDate === finishDate ? f : `${s} ~ ${f}`;
+  return s || f || "-";
+}
+
 // ---------------------------------------------------------------
 function BookDetail({ book, genreColors, seriesNames = [], onClose, onSave, onDelete }) {
   const isEdit = Boolean(book);
@@ -1249,7 +1257,13 @@ function BookDetail({ book, genreColors, seriesNames = [], onClose, onSave, onDe
           <div>
             <h1 className="font-serif text-2xl font-bold">{title || "제목 없음"}</h1>
             {author && <p className="text-base text-gray-600 mt-1">{author}</p>}
-            <p className="text-sm text-gray-600 mt-3">읽은 날짜: {formatDate(finishDate) || "-"}</p>
+            <div className="mt-1.5">
+              <Stars value={rating} />
+            </div>
+            {pages && <p className="text-sm text-gray-600 mt-3">쪽수: {Number(pages).toLocaleString("ko-KR")}쪽</p>}
+            <p className={`text-sm text-gray-600${pages ? "" : " mt-3"}`}>
+              읽은 날짜: {printDateRange(startDate, finishDate)}
+            </p>
             <p className="text-sm text-gray-600">장르: {trimmedGenre || "-"}</p>
           </div>
         </div>
