@@ -91,11 +91,17 @@ export default function ShelfPage() {
     let cover_url = fields.cover_url || null;
 
     if (file) {
-      const path = `${user.id}/${Date.now()}-${file.name}`;
+      // don't embed the raw file name in the storage path — special
+      // characters (한글, 공백, 이모지 등) in a phone's photo filename can
+      // make the upload silently fail
+      const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+      const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
       const { error: uploadError } = await supabase.storage
         .from("covers")
         .upload(path, file, { upsert: false });
-      if (!uploadError) {
+      if (uploadError) {
+        alert(`표지 이미지를 업로드하지 못했어요. 나머지 내용은 저장할게요.\n(${uploadError.message})`);
+      } else {
         const { data: pub } = supabase.storage.from("covers").getPublicUrl(path);
         cover_url = pub.publicUrl;
       }
@@ -106,14 +112,24 @@ export default function ShelfPage() {
         .from("books")
         .update({ ...fields, cover_url })
         .eq("id", bookId);
-      if (!error) await loadBooks(user.id);
+      if (!error) {
+        await loadBooks(user.id);
+      } else {
+        alert(`저장하지 못했어요.\n(${error.message})`);
+        return;
+      }
     } else {
       const { error } = await supabase.from("books").insert({
         ...fields,
         cover_url,
         user_id: user.id,
       });
-      if (!error) await loadBooks(user.id);
+      if (!error) {
+        await loadBooks(user.id);
+      } else {
+        alert(`저장하지 못했어요.\n(${error.message})`);
+        return;
+      }
     }
     setModalOpen(false);
     setEditingBook(null);
