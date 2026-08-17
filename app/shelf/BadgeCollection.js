@@ -90,7 +90,7 @@ function GenreBadgeGrid({ doneBooks, genreColors }) {
             onClick={() => setSelected(g)}
             className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition ${
               current === g
-                ? "bg-navy border-navy text-white"
+                ? "bg-peach-500 border-peach-500 text-white"
                 : "bg-card border-rose-100 text-muted hover:border-peach-300"
             }`}
           >
@@ -137,8 +137,8 @@ function BadgeModal({ totalPages, doneBooks, genreColors, onClose }) {
             <button
               key={c.key}
               onClick={() => setCategory(c.key)}
-              className={`flex-1 px-2 py-1.5 rounded-full text-xs transition ${
-                category === c.key ? "bg-navy text-white" : "text-muted"
+              className={`flex-1 px-2 py-1.5 rounded-full text-xs font-medium transition ${
+                category === c.key ? "bg-card text-ink shadow-card" : "text-muted hover:text-ink"
               }`}
             >
               {c.label}
@@ -167,7 +167,7 @@ export default function BadgeCollection({ totalPages, doneBooks, genreColors }) 
     <div>
       <button
         onClick={() => setOpen(true)}
-        className="w-full text-left bg-card rounded-xl2 shadow-card px-5 py-5 flex items-center gap-4 hover:-translate-y-0.5 transition"
+        className="w-full text-left bg-card rounded-xl2 border border-rose-100 shadow-card px-5 py-5 flex items-center gap-4 hover:-translate-y-0.5 hover:shadow-soft transition"
       >
         <span className="text-3xl" style={{ lineHeight: 1 }}>
           🏅

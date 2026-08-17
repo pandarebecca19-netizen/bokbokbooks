@@ -254,15 +254,15 @@ export default function ShelfPage() {
         </div>
 
         {/* hero card */}
-        <div className="bg-navy rounded-xl2 shadow-soft px-6 py-6 text-cream relative overflow-hidden">
+        <div className="bg-gradient-to-br from-navy to-navy-deep rounded-xl2 shadow-soft px-6 py-7 text-cream relative overflow-hidden">
           <div
-            className="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-20"
+            className="absolute -top-16 -right-16 w-56 h-56 rounded-full opacity-[0.15] pointer-events-none"
             style={{ background: "radial-gradient(circle, #E8967A, transparent 70%)" }}
           />
-          <p className="text-[0.7rem] tracking-[0.2em] text-peach-300 font-medium relative">MY SHELF</p>
-          <h1 className="font-serif text-2xl text-white mt-1 relative">안녕하세요, {displayName}님</h1>
+          <p className="text-[0.7rem] tracking-[0.25em] text-peach-300 font-medium relative">MY SHELF</p>
+          <h1 className="font-serif text-2xl text-white mt-1.5 relative">안녕하세요, {displayName}님</h1>
 
-          <div className="mt-4 bg-navy-deep rounded-xl px-5 py-4 relative">
+          <div className="mt-5 bg-white/[0.06] backdrop-blur-sm border border-white/10 rounded-xl px-5 py-4 relative">
             <p className="font-serif text-4xl text-peach-400 leading-none">
               {totalRead}
               <span className="text-lg text-peach-300 ml-1">권</span>
@@ -295,59 +295,58 @@ export default function ShelfPage() {
         </div>
 
         {/* tabs + add */}
-        <div className="grid grid-cols-3 gap-3 mt-4">
-          <button
-            onClick={() => setTab("shelf")}
-            className={`bg-card rounded-xl2 shadow-card px-3 py-4 flex flex-col items-center gap-1.5 transition hover:-translate-y-0.5 ${
-              tab === "shelf" ? "ring-2 ring-peach-400" : ""
-            }`}
-          >
-            <span className="text-xl">📚</span>
-            <span className="text-xs text-ink font-medium">책장</span>
-          </button>
-          <button
-            onClick={() => setTab("stats")}
-            className={`bg-card rounded-xl2 shadow-card px-3 py-4 flex flex-col items-center gap-1.5 transition hover:-translate-y-0.5 ${
-              tab === "stats" ? "ring-2 ring-peach-400" : ""
-            }`}
-          >
-            <span className="text-xl">📊</span>
-            <span className="text-xs text-ink font-medium">통계</span>
-          </button>
+        <div className="flex items-center gap-2 mt-5">
+          <div className="flex-1 flex items-center gap-1 bg-rose-50 rounded-full p-1">
+            <button
+              onClick={() => setTab("shelf")}
+              className={`flex-1 flex items-center justify-center gap-1.5 rounded-full py-2.5 text-sm font-medium transition ${
+                tab === "shelf" ? "bg-card text-ink shadow-card" : "text-muted hover:text-ink"
+              }`}
+            >
+              <span>📚</span> 책장
+            </button>
+            <button
+              onClick={() => setTab("stats")}
+              className={`flex-1 flex items-center justify-center gap-1.5 rounded-full py-2.5 text-sm font-medium transition ${
+                tab === "stats" ? "bg-card text-ink shadow-card" : "text-muted hover:text-ink"
+              }`}
+            >
+              <span>📊</span> 통계
+            </button>
+          </div>
           <button
             onClick={openAdd}
-            className="bg-peach-500 rounded-xl2 shadow-card px-3 py-4 flex flex-col items-center gap-1.5 transition hover:-translate-y-0.5 hover:bg-peach-400"
+            className="shrink-0 bg-peach-500 hover:bg-peach-400 rounded-full shadow-card px-5 py-2.5 flex items-center gap-1.5 text-sm font-medium text-white transition"
           >
-            <span className="text-xl">＋</span>
-            <span className="text-xs text-white font-medium">새 책</span>
+            <span>＋</span> 새 책
           </button>
         </div>
 
         {tab === "shelf" && (
-          <div className="mt-4 flex flex-col gap-3">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[0.7rem] text-muted">보기</span>
-              {[
-                { key: "shelf", label: "📚 책장형" },
-                { key: "cover", label: "🖼️ 표지형" },
-                { key: "list", label: "📋 리스트형" },
-              ].map((v) => (
-                <button
-                  key={v.key}
-                  onClick={() => setViewMode(v.key)}
-                  className={`text-xs px-3 py-1.5 rounded-full border transition ${
-                    viewMode === v.key
-                      ? "bg-navy border-navy text-white"
-                      : "bg-card border-rose-100 text-muted hover:border-peach-300"
-                  }`}
-                >
-                  {v.label}
-                </button>
-              ))}
+          <div className="mt-5 flex flex-col gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="text-[0.65rem] uppercase tracking-wider text-muted/80 font-medium">보기</span>
+              <div className="flex items-center gap-1 bg-rose-50 rounded-full p-1">
+                {[
+                  { key: "shelf", label: "📚 책장형" },
+                  { key: "cover", label: "🖼️ 표지형" },
+                  { key: "list", label: "📋 리스트형" },
+                ].map((v) => (
+                  <button
+                    key={v.key}
+                    onClick={() => setViewMode(v.key)}
+                    className={`text-xs px-3 py-1.5 rounded-full font-medium transition ${
+                      viewMode === v.key ? "bg-card text-ink shadow-card" : "text-muted hover:text-ink"
+                    }`}
+                  >
+                    {v.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[0.7rem] text-muted">필터</span>
+            <div className="flex items-center gap-3 flex-wrap">
+              <span className="text-[0.65rem] uppercase tracking-wider text-muted/80 font-medium">필터</span>
               <button
                 onClick={() => setFilterPanelOpen((v) => !v)}
                 className={`text-xs px-3 py-1.5 rounded-full border transition ${
@@ -375,7 +374,7 @@ export default function ShelfPage() {
             </div>
 
             {filterPanelOpen && (
-              <div className="bg-card rounded-xl2 shadow-card p-3">
+              <div className="bg-card rounded-xl2 shadow-card border border-rose-100 p-3">
                 {!activeFilter ? (
                   <div className="flex flex-wrap gap-1.5">
                     {FILTER_TYPES.map((f) => (
@@ -383,7 +382,7 @@ export default function ShelfPage() {
                         key={f.key}
                         disabled={f.options.length === 0}
                         onClick={() => setFilterType(f.key)}
-                        className="text-xs px-3 py-1.5 rounded-full border border-rose-100 text-muted hover:border-peach-300 disabled:opacity-40 transition"
+                        className="text-xs px-3 py-1.5 rounded-full border border-rose-100 text-muted hover:border-peach-300 hover:text-ink disabled:opacity-40 transition"
                       >
                         {f.icon} {f.label}
                       </button>
@@ -407,7 +406,7 @@ export default function ShelfPage() {
                           }}
                           className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition ${
                             filterValue === opt
-                              ? "bg-navy border-navy text-white"
+                              ? "bg-peach-500 border-peach-500 text-white"
                               : "bg-card border-rose-100 text-muted hover:border-peach-300"
                           }`}
                         >
@@ -538,7 +537,7 @@ function SpineShelf({ books, onSelect }) {
   const pattern = spineH + ROW_GAP;
   return (
     <div className="max-w-5xl mx-auto px-2 sm:px-5">
-      <div className="rounded-2xl border-[5px] sm:border-[10px] border-[#E5E1DA] bg-white shadow-soft overflow-hidden">
+      <div className="rounded-2xl border-[5px] sm:border-[10px] border-oak bg-white shadow-soft overflow-hidden">
         <div
           className="relative flex flex-wrap content-start items-end px-2 sm:px-6"
           style={{
@@ -549,9 +548,9 @@ function SpineShelf({ books, onSelect }) {
             backgroundImage: `repeating-linear-gradient(
               to bottom,
               transparent 0px, transparent ${spineH}px,
-              rgba(0,0,0,0.08) ${spineH}px, rgba(0,0,0,0.08) ${spineH + 6}px,
-              #EDEBE7 ${spineH + 6}px, #F7F6F4 ${spineH + 13}px,
-              #E3E0DA ${spineH + 20}px,
+              rgba(58,46,43,0.10) ${spineH}px, rgba(58,46,43,0.10) ${spineH + 6}px,
+              #F1E4C8 ${spineH + 6}px, #FBF6F1 ${spineH + 13}px,
+              #E6CDA0 ${spineH + 20}px,
               transparent ${spineH + 20}px, transparent ${pattern}px
             )`,
           }}
@@ -619,7 +618,7 @@ function SpineShelf({ books, onSelect }) {
             );
           })}
         </div>
-        <div className="h-5 bg-gradient-to-b from-[#EDEBE7] to-[#E0DDD6] shadow-inner" />
+        <div className="h-5 bg-gradient-to-b from-oak-light to-oak shadow-inner" />
       </div>
     </div>
   );
@@ -641,7 +640,7 @@ function CoverCard({ book, onSelect }) {
   return (
     <button
       onClick={() => onSelect(book)}
-      className="relative text-left bg-card rounded-xl2 shadow-card overflow-hidden hover:-translate-y-1 transition"
+      className="relative text-left bg-card rounded-xl2 border border-rose-100 shadow-card overflow-hidden hover:-translate-y-1 hover:shadow-soft transition"
     >
       {book.is_favorite && (
         <span
@@ -699,7 +698,7 @@ function AllBooksRow({ book, onSelect }) {
   return (
     <button
       onClick={() => onSelect(book)}
-      className="w-full flex gap-4 items-center text-left bg-card rounded-xl2 shadow-card px-4 py-3 hover:-translate-y-0.5 transition"
+      className="w-full flex gap-4 items-center text-left bg-card rounded-xl2 border border-rose-100 shadow-card px-4 py-3 hover:-translate-y-0.5 hover:shadow-soft transition"
     >
       <div
         className="shrink-0 w-12 rounded-md overflow-hidden flex items-center justify-center"
@@ -775,7 +774,7 @@ function AllBooksView({ books, onSelect }) {
   return (
     <div className="max-w-5xl mx-auto px-5">
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-        <div className="flex gap-1 bg-card rounded-full p-1 shadow-card">
+        <div className="flex gap-1 bg-rose-50 rounded-full p-1">
           {[
             { key: "all", label: `전체 (${allCount})` },
             { key: "done", label: `읽은 책 (${doneCount})` },
@@ -785,8 +784,8 @@ function AllBooksView({ books, onSelect }) {
             <button
               key={t.key}
               onClick={() => setStatusFilter(t.key)}
-              className={`px-3 py-1.5 rounded-full text-xs transition ${
-                statusFilter === t.key ? "bg-navy text-white" : "text-muted"
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                statusFilter === t.key ? "bg-card text-ink shadow-card" : "text-muted hover:text-ink"
               }`}
             >
               {t.label}
@@ -839,11 +838,11 @@ function StatsView({ books, doneBooks, totalRead, totalPages, genreList, genreCo
       <div>
         <p className="font-serif text-lg text-ink mb-3">전체 통계</p>
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-card rounded-xl2 shadow-card px-4 py-4 text-center">
+          <div className="bg-card rounded-xl2 border border-rose-100 shadow-card px-4 py-4 text-center">
             <p className="font-serif text-2xl text-ink">{totalRead}</p>
             <p className="text-xs text-muted mt-1">읽은 책</p>
           </div>
-          <div className="bg-card rounded-xl2 shadow-card px-4 py-4 text-center">
+          <div className="bg-card rounded-xl2 border border-rose-100 shadow-card px-4 py-4 text-center">
             <p className="font-serif text-2xl text-ink">{totalPages.toLocaleString("ko-KR")}</p>
             <p className="text-xs text-muted mt-1">읽은 쪽수</p>
           </div>
@@ -855,7 +854,7 @@ function StatsView({ books, doneBooks, totalRead, totalPages, genreList, genreCo
         {genreList.length === 0 ? (
           <p className="text-sm text-muted">아직 책이 없어요.</p>
         ) : (
-          <div className="bg-card rounded-xl2 shadow-card divide-y divide-rose-50">
+          <div className="bg-card rounded-xl2 border border-rose-100 shadow-card divide-y divide-rose-50">
             {genreList.map(([genre, count]) => (
               <div key={genre} className="flex items-center justify-between px-4 py-3">
                 <span className="flex items-center gap-2 text-sm text-ink">
@@ -879,7 +878,7 @@ function StatsView({ books, doneBooks, totalRead, totalPages, genreList, genreCo
         {yearlyStats.length === 0 ? (
           <p className="text-sm text-muted">아직 다 읽은 책이 없어요.</p>
         ) : (
-          <div className="bg-card rounded-xl2 shadow-card divide-y divide-rose-50">
+          <div className="bg-card rounded-xl2 border border-rose-100 shadow-card divide-y divide-rose-50">
             {yearlyStats.map((y) => (
               <div key={y.year} className="flex items-center justify-between px-4 py-3">
                 <span className="text-sm text-ink font-medium">{y.year}년</span>

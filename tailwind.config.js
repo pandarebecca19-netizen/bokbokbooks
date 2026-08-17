@@ -57,5 +57,13 @@ module.exports = {
       },
     },
   },
+  corePlugins: {
+    // Tailwind auto-generates a `shadow-{colorName}` utility for every theme
+    // color, including our "card" color (#FFFFFF) — that utility collides
+    // with (and, by source order, silently overrides) our custom shadow-card
+    // shape utility, turning every card's shadow invisible/white. Nothing in
+    // this app tints shadow color directly, so disable that plugin.
+    boxShadowColor: false,
+  },
   plugins: [],
 };

@@ -130,7 +130,7 @@ export default function CharacterCard({ books, totalPages }) {
 
       <button
         onClick={() => setOpen(true)}
-        className="w-full text-left bg-card rounded-xl2 shadow-card px-5 py-5 flex items-center gap-5 hover:-translate-y-0.5 transition"
+        className="w-full text-left bg-card rounded-xl2 border border-rose-100 shadow-card px-5 py-5 flex items-center gap-5 hover:-translate-y-0.5 hover:shadow-soft transition"
       >
         <div className="text-5xl shrink-0 char-bob" style={{ lineHeight: 1 }}>
           {stage.emoji}
