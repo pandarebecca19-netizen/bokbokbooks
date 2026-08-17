@@ -41,6 +41,9 @@ button:focus-visible {
     font-size: 0.95rem;
     line-height: 1.8;
     color: #3a2e2b;
+    /* 한글도 영어처럼 어절(띄어쓰기) 단위로만 줄바꿈 — 글자 사이 아무데서나 안 끊기게 */
+    word-break: keep-all;
+    overflow-wrap: break-word;
   }
   .print-note-content p {
     margin: 0.4em 0;
@@ -50,10 +53,21 @@ button:focus-visible {
     padding-left: 1.4em;
     margin: 0.4em 0;
   }
+  /* 불릿 하나의 마지막 줄만 다음 페이지로 넘어가지 않도록, 항목 통째로 붙여서 넘긴다 */
+  .print-note-content li {
+    break-inside: avoid;
+  }
   .print-note-content [data-type="toggle-summary"] {
     font-weight: 700;
+    /* 토글 제목만 이전 페이지에 남고 내용이 다음 페이지로 넘어가지 않도록,
+       제목 바로 뒤에서는 페이지가 끊기지 않게 한다 */
+    break-after: avoid;
   }
   .print-note-content [data-type="toggle-content"] {
     margin: 0.2em 0 0.6em 1em;
+  }
+  .print-note-content h2,
+  .print-note-content h3 {
+    break-after: avoid;
   }
 }
