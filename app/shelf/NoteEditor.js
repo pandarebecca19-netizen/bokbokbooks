@@ -211,6 +211,9 @@ export default function NoteEditor({ value, onChange }) {
         <ToolbarButton label="링크" active={editor.isActive("link")} onClick={setLink}>
           🔗 링크
         </ToolbarButton>
+        <ToolbarButton label="화살표" onClick={() => editor.chain().focus().insertContent("→").run()}>
+          →
+        </ToolbarButton>
         {speechSupported && (
           <ToolbarButton
             label={listening ? "음성 입력 중지" : "음성으로 입력"}
