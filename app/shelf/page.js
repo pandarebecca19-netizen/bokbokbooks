@@ -448,6 +448,7 @@ export default function ShelfPage() {
       <div className="mt-6 print:hidden">
         {tab === "shelf" && (
           <>
+            <BadgeBoard totalPages={totalPages} />
             {filterType === "genre" && filterValue && (
               <div className="max-w-5xl mx-auto px-5">
                 <GenreBadges key={filterValue} genre={filterValue} count={doneCountForFilterGenre} />
@@ -848,7 +849,6 @@ function StatsView({ books, doneBooks, totalRead, totalPages, genreList, genreCo
       </div>
 
       <div>
-        <BadgeBoard totalPages={totalPages} />
         <BadgeCollection totalPages={totalPages} doneBooks={doneBooks} genreColors={genreColors} />
       </div>
 
