@@ -18,6 +18,7 @@ create table if not exists public.books (
   current_page integer,
   shelf text,
   is_favorite boolean not null default false,
+  format text,
   created_at timestamptz default now()
 );
 

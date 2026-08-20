@@ -609,6 +609,15 @@ function SpineShelf({ books, onSelect }) {
                     ❤️
                   </span>
                 )}
+                {b.format === "ebook" && (
+                  <span
+                    title="전자책"
+                    className="absolute top-2 right-1 text-[0.6rem] sm:text-xs"
+                    style={{ lineHeight: 1 }}
+                  >
+                    📱
+                  </span>
+                )}
                 <span className="w-[70%] h-[2px] bg-[rgba(59,42,31,0.3)] mb-2 mt-1.5 shrink-0" />
                 <span
                   className="flex-1 overflow-hidden font-serif font-bold text-[0.62rem] sm:text-[0.8rem] tracking-wide max-h-full"
@@ -666,6 +675,15 @@ function CoverCard({ book, onSelect }) {
           style={{ lineHeight: 1 }}
         >
           ❤️
+        </span>
+      )}
+      {book.format === "ebook" && (
+        <span
+          title="전자책"
+          className="absolute top-1.5 left-1.5 z-10 text-base drop-shadow"
+          style={{ lineHeight: 1 }}
+        >
+          📱
         </span>
       )}
       {book.cover_url ? (
@@ -734,6 +752,7 @@ function AllBooksRow({ book, onSelect }) {
       <div className="flex-1 min-w-0">
         <p className="font-serif text-sm text-ink truncate flex items-center gap-1.5">
           {book.is_favorite && <span className="shrink-0">❤️</span>}
+          {book.format === "ebook" && <span className="shrink-0" title="전자책">📱</span>}
           {book.title}
         </p>
         {book.author && <p className="text-xs text-muted truncate mt-0.5">{book.author}</p>}
@@ -744,9 +763,11 @@ function AllBooksRow({ book, onSelect }) {
               <div className="flex items-center gap-2">
                 <span className="text-xs text-peach-500 font-medium w-9 shrink-0">{progress.percent}%</span>
                 <ProgressBar percent={progress.percent} />
-                <span className="text-[0.7rem] text-muted whitespace-nowrap shrink-0">
-                  {progress.current} / {progress.total} 페이지
-                </span>
+                {!progress.isPercent && (
+                  <span className="text-[0.7rem] text-muted whitespace-nowrap shrink-0">
+                    {progress.current} / {progress.total} 페이지
+                  </span>
+                )}
               </div>
             )}
             {book.start_date && (
@@ -928,6 +949,7 @@ function BookDetail({ book, genreColors, seriesNames = [], onClose, onSave, onDe
   const [author, setAuthor] = useState(book?.author || "");
   const [pages, setPages] = useState(book?.pages || "");
   const [currentPage, setCurrentPage] = useState(book?.current_page || "");
+  const [format, setFormat] = useState(book?.format || "paper");
   const [price, setPrice] = useState(book?.price || "");
   const [series, setSeries] = useState(book?.shelf || "");
   const [status, setStatus] = useState(book?.status || "reading");
@@ -948,7 +970,7 @@ function BookDetail({ book, genreColors, seriesNames = [], onClose, onSave, onDe
   const existingGenreColor = trimmedGenre && genreColors[trimmedGenre];
   const effectiveGenreColor = existingGenreColor || genreColor;
   const color = spineColorFor({ title, author, color_key: colorKey });
-  const progress = readingProgress({ pages, current_page: currentPage });
+  const progress = readingProgress({ pages, current_page: currentPage, format });
 
   const handleGenreChange = (v) => {
     setGenre(v);
@@ -978,7 +1000,13 @@ function BookDetail({ book, genreColors, seriesNames = [], onClose, onSave, onDe
         genre_color: trimmedGenre ? effectiveGenreColor : null,
         start_date: startDate || null,
         finish_date: finishDate || null,
-        current_page: status === "reading" && currentPage ? Number(currentPage) : null,
+        current_page:
+          status === "reading" && currentPage
+            ? format === "ebook"
+              ? Math.max(0, Math.min(100, Number(currentPage)))
+              : Number(currentPage)
+            : null,
+        format,
         rating,
         is_favorite: isFavorite,
         note,
@@ -1093,13 +1121,35 @@ function BookDetail({ book, genreColors, seriesNames = [], onClose, onSave, onDe
                   ))}
                 </div>
 
+                <div className="flex flex-wrap gap-1.5 items-start content-start">
+                  {[
+                    { key: "paper", label: "📖 종이책" },
+                    { key: "ebook", label: "📱 전자책" },
+                  ].map((f) => (
+                    <button
+                      key={f.key}
+                      type="button"
+                      onClick={() => {
+                        setFormat(f.key);
+                        setCurrentPage("");
+                      }}
+                      className={`px-2.5 py-1 rounded-full text-[0.72rem] border transition ${
+                        format === f.key ? "bg-rose-50 border-rose-400 text-ink" : "border-rose-100 text-muted"
+                      }`}
+                    >
+                      {f.label}
+                    </button>
+                  ))}
+                </div>
+
                 {status === "reading" && (
                   <div className="flex flex-col gap-1.5">
                     <label className="flex items-center gap-2 text-[0.68rem] text-muted">
-                      현재 페이지
+                      {format === "ebook" ? "진행률(%)" : "현재 페이지"}
                       <input
                         type="number"
                         min="0"
+                        max={format === "ebook" ? 100 : undefined}
                         className="w-16 rounded-lg border border-rose-100 px-2 py-1 text-xs text-ink"
                         value={currentPage}
                         onChange={(e) => setCurrentPage(e.target.value)}
@@ -1111,9 +1161,11 @@ function BookDetail({ book, genreColors, seriesNames = [], onClose, onSave, onDe
                           {progress.percent}%
                         </span>
                         <ProgressBar percent={progress.percent} />
-                        <span className="text-[0.68rem] text-muted whitespace-nowrap shrink-0">
-                          {progress.current} / {progress.total}쪽
-                        </span>
+                        {!progress.isPercent && (
+                          <span className="text-[0.68rem] text-muted whitespace-nowrap shrink-0">
+                            {progress.current} / {progress.total}쪽
+                          </span>
+                        )}
                       </div>
                     )}
                   </div>
