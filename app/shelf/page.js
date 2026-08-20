@@ -609,15 +609,6 @@ function SpineShelf({ books, onSelect }) {
                     ❤️
                   </span>
                 )}
-                {b.format === "ebook" && (
-                  <span
-                    title="전자책"
-                    className="absolute top-2 right-1 text-[0.6rem] sm:text-xs"
-                    style={{ lineHeight: 1 }}
-                  >
-                    📱
-                  </span>
-                )}
                 <span className="w-[70%] h-[2px] bg-[rgba(59,42,31,0.3)] mb-2 mt-1.5 shrink-0" />
                 <span
                   className="flex-1 overflow-hidden font-serif font-bold text-[0.62rem] sm:text-[0.8rem] tracking-wide max-h-full"
