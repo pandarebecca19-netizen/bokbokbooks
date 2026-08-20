@@ -1094,34 +1094,8 @@ function BookDetail({ book, genreColors, seriesNames = [], onClose, onSave, onDe
                   </button>
                 ))}
               </div>
-              <button
-                type="button"
-                onClick={() => setIsFavorite((v) => !v)}
-                title={isFavorite ? "즐겨찾기 해제" : "즐겨찾기에 추가"}
-                className="text-2xl leading-none"
-              >
-                {isFavorite ? "❤️" : "🤍"}
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-              <div className="flex flex-col gap-2">
-                <div className="flex flex-wrap gap-1.5 items-start content-start">
-                  {Object.entries(STATUS).map(([key, v]) => (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() => setStatus(key)}
-                      className={`px-2.5 py-1 rounded-full text-[0.72rem] border transition ${
-                        status === key ? "bg-rose-50 border-rose-400 text-ink" : "border-rose-100 text-muted"
-                      }`}
-                    >
-                      {v.label}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="flex flex-wrap gap-1.5 items-start content-start">
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1.5">
                   {[
                     { key: "paper", label: "📖 종이책" },
                     { key: "ebook", label: "📱 전자책" },
@@ -1138,6 +1112,33 @@ function BookDetail({ book, genreColors, seriesNames = [], onClose, onSave, onDe
                       }`}
                     >
                       {f.label}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsFavorite((v) => !v)}
+                  title={isFavorite ? "즐겨찾기 해제" : "즐겨찾기에 추가"}
+                  className="text-2xl leading-none"
+                >
+                  {isFavorite ? "❤️" : "🤍"}
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-wrap gap-1.5 items-start content-start">
+                  {Object.entries(STATUS).map(([key, v]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setStatus(key)}
+                      className={`px-2.5 py-1 rounded-full text-[0.72rem] border transition ${
+                        status === key ? "bg-rose-50 border-rose-400 text-ink" : "border-rose-100 text-muted"
+                      }`}
+                    >
+                      {v.label}
                     </button>
                   ))}
                 </div>
