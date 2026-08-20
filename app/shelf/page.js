@@ -668,15 +668,6 @@ function CoverCard({ book, onSelect }) {
           ❤️
         </span>
       )}
-      {book.format === "ebook" && (
-        <span
-          title="전자책"
-          className="absolute top-1.5 left-1.5 z-10 text-base drop-shadow"
-          style={{ lineHeight: 1 }}
-        >
-          📱
-        </span>
-      )}
       {book.cover_url ? (
         <img
           src={book.cover_url}
@@ -743,7 +734,6 @@ function AllBooksRow({ book, onSelect }) {
       <div className="flex-1 min-w-0">
         <p className="font-serif text-sm text-ink truncate flex items-center gap-1.5">
           {book.is_favorite && <span className="shrink-0">❤️</span>}
-          {book.format === "ebook" && <span className="shrink-0" title="전자책">📱</span>}
           {book.title}
         </p>
         {book.author && <p className="text-xs text-muted truncate mt-0.5">{book.author}</p>}
